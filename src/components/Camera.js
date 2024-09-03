@@ -4,7 +4,7 @@ import { useAttendance } from "../hooks/useAttendance";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-hot-toast';
 
-const Camera = () => {
+const Camera = ({onClose}) => {
   const webcamRef = useRef(null);
   const [imageSrc, setImageSrc] = useState(null);
   const [location, setLocation] = useState({ lat: null, lng: null });
@@ -46,12 +46,14 @@ const Camera = () => {
 
       // Reset image source and turn off the camera
       setImageSrc(null);
+      setIsCameraOpen(false); // Close the camera/modal
       if (webcamRef.current && webcamRef.current.video && webcamRef.current.video.srcObject) {
         webcamRef.current.video.srcObject.getTracks().forEach((track) => track.stop());
       }
+      onClose();
 
       // Close the camera component
-      setIsCameraOpen(false);
+      // setIsCameraOpen(false);
 
       // Navigate to home page
       // toast.success("Attendance submitted successfully!");

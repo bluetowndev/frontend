@@ -60,7 +60,7 @@ const Sidebar = () => {
         className="flex flex-col items-center justify-center bg-white rounded-lg shadow-lg p-6 mx-auto my-20 w-full max-w-md"
         overlayClassName="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center"
       >
-        <Camera />
+        <Camera onClose={closeModal} />
       </Modal>
     </div>
   );
