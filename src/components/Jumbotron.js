@@ -1,11 +1,39 @@
 import React, { useState, useEffect } from "react";
 import { useAuthContext } from "../hooks/useAuthContext";
 
+const apiUrl = process.env.REACT_APP_API_URL || '';
+
 const Jumbotron = () => {
   const [showPopup, setShowPopup] = useState(false);
+
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]); // Default to today's date
   const [worktrackData, setWorktrackData] = useState([]);
+
+  const [userDetails, setUserDetails] = useState(null);
+
   const { user } = useAuthContext();
+
+  const fetchUserDetails = async (email) => {
+    try {
+      const response = await fetch(`${apiUrl}/api/user/user-details?email=${email}`);
+      const data = await response.json();
+      {console.log(data)}
+      if (response.ok) {
+        setUserDetails(data);
+      } else {
+        console.error(data.error);
+      }
+    } catch (error) {
+      console.log(email);
+      console.error("Error fetching user details:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (showPopup) {
+      fetchUserDetails(user.email);
+    }
+  }, [showPopup, user.email]);
 
   const openPopup = () => {
     setShowPopup(true);
@@ -59,6 +87,7 @@ const Jumbotron = () => {
               </button>
             </div>
             <div className="mt-4">
+
               <h2 className="text-lg font-bold">{user.fullName}</h2>            
               <p className="text-sm text-gray-800">Email: {user.email}</p>
               <p className="text-sm text-gray-800">Phone: {user.phoneNumber}</p>
@@ -99,6 +128,19 @@ const Jumbotron = () => {
                   </tbody>
                 </table>
               </div>
+
+              {userDetails ? (
+                <>
+                  <h2 className="text-lg font-bold">{userDetails.fullName}</h2>            
+                  <p className="text-sm text-gray-800">Email: {userDetails.email}</p>
+                  <p className="text-sm text-gray-800">Phone: {userDetails.phoneNumber}</p>
+                  <p className="text-sm text-gray-800">Reporting Manager: {userDetails.reportingManager}</p>
+                  <p className="text-sm text-gray-800">State: {userDetails.state}</p>
+                </>
+              ) : (
+                <p>Loading...</p>
+              )}
+
             </div>
           </div>
         </div>

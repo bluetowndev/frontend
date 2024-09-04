@@ -59,7 +59,6 @@ const Login = () => {
           Log in
         </button>
         
-        
         {error && <div className="error mt-4 p-2 bg-red-100 text-red-700 border border-red-700 rounded-md">{error}</div>}
       </form>
     </>
