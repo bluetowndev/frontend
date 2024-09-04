@@ -59,13 +59,6 @@ const Login = () => {
           Log in
         </button>
         
-        <button
-          type="button"
-          onClick={handleForgotPassword}
-          className="w-full p-2 mt-4 text-indigo-600 text-center underline hover:text-indigo-700 transition duration-300"
-        >
-          Forgot Password?
-        </button>
         
         {error && <div className="error mt-4 p-2 bg-red-100 text-red-700 border border-red-700 rounded-md">{error}</div>}
       </form>

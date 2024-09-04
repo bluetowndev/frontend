@@ -30,7 +30,7 @@ ChartJS.register(
 
 const options = {
   responsive: true,
-  maintainAspectRatio: false, // Added to maintain the aspect ratio properly
+  maintainAspectRatio: false,
   plugins: {
     legend: {
       position: "top",
@@ -38,6 +38,18 @@ const options = {
     title: {
       display: false,
       text: "",
+    },
+    tooltip: {
+      callbacks: {
+        label: function(tooltipItem) {
+          const hours = Math.floor(tooltipItem.parsed.y);
+          const minutes = Math.round((tooltipItem.parsed.y - hours) * 60);
+          const period = hours >= 12 ? 'PM' : 'AM';
+          const displayHour = hours % 12 || 12; // Convert to 12-hour format
+          const displayMinutes = minutes < 10 ? `0${minutes}` : minutes;
+          return `${displayHour}:${displayMinutes} ${period}`;
+        },
+      },
     },
   },
   scales: {
@@ -52,26 +64,27 @@ const options = {
         text: 'Date',
       },
       ticks: {
-        autoSkip: false,
+        autoSkip: true,
         maxRotation: 0,
         minRotation: 0,
       },
     },
     y: {
-      type: 'time',
-      time: {
-        unit: 'hour',
-        parser: 'HH:mm',
-        displayFormats: {
-          hour: 'ha',
-        },
-      },
-      min: '08:00',
-      max: '18:00', // Adjust the max value based on your requirement
+      min: 8,
+      max: 20, // 8 PM in 24-hour format
       title: {
         display: true,
-        text: 'Time',
+        text: 'Check-in Time',
       },
+      ticks: {
+        stepSize: 1,
+        callback: function(value) {
+          const hours = value % 24;
+          const period = hours >= 12 ? 'PM' : 'AM';
+          const displayHour = hours % 12 || 12; // Convert to 12-hour format
+          return `${displayHour} ${period}`;
+        }
+      }
     },
   },
   elements: {
@@ -89,14 +102,23 @@ const LineChart = () => {
   useEffect(() => {
     const fetchData = async () => {
       const data = await fetchAllAttendance();
-      setAttendanceData(data.map(attendance => ({
-        x: new Date(attendance.date), // Ensure x is a Date object
-        y: new Date(attendance.timestamp), // Ensure y is a Date object for time scale
-      })));
+      const now = new Date();
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(now.getDate() - 7);
+
+      // Filter data for the last seven days
+      const filteredData = data
+        .filter(attendance => new Date(attendance.date) >= sevenDaysAgo)
+        .map(attendance => ({
+          x: new Date(attendance.date), // x is a Date object for the x-axis
+          y: new Date(attendance.timestamp).getHours() + new Date(attendance.timestamp).getMinutes() / 60, // y is the hour in decimal format for the y-axis
+        }));
+
+      setAttendanceData(filteredData);
     };
 
     fetchData();
-  }, []); // Empty dependency array ensures this runs only once
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -113,7 +135,7 @@ const LineChart = () => {
   const data = {
     datasets: [
       {
-        label: "Checkin Time",
+        label: "Check-in Time",
         data: attendanceData,
         borderWidth: 3,
         borderColor: "#6366f1",
@@ -127,9 +149,9 @@ const LineChart = () => {
     <div className="w-full mt-20">
       <div className="flex items-center mb-4">
         <FaChartLine className="mr-2 text-blue-500" />
-        <span className="text-gray-400 font-normal">Checkin Time</span>
+        <span className="text-gray-400 font-normal">Check-in Time</span>
       </div>
-      <div className="w-full h-[400px]"> {/* Set a fixed height to ensure it resizes properly */}
+      <div className="w-full h-[400px]">
         <Line ref={chartRef} options={options} data={data} />
       </div>
     </div>

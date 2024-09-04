@@ -8,8 +8,6 @@ import Signup from "./pages/Signup";
 import Navbar from "./components/Navbar";
 import AdminDashboard from "./pages/AdminDashboard";
 import Footer from "./components/Footer";
-import RequestPasswordReset from "./pages/RequestPassword";
-import ResetPassword from "./pages/ResetPassword";
 import { Toaster } from 'react-hot-toast';
 
 function App() {
@@ -56,14 +54,7 @@ function App() {
                 )
               }
             />
-            <Route
-              path="/request-password-reset"
-              element={!user ? <RequestPasswordReset /> : <Navigate to="/" />}
-            />
-            <Route
-              path="/reset-password/:token"
-              element={!user ? <ResetPassword /> : <Navigate to="/" />}
-            />
+            
           </Routes>
         </div>
         <Footer />
