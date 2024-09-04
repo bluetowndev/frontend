@@ -56,14 +56,6 @@ function App() {
                 )
               }
             />
-            <Route
-              path="/request-password-reset"
-              element={!user ? <RequestPasswordReset /> : <Navigate to="/" />}
-            />
-            <Route
-              path="/reset-password/:token"
-              element={!user ? <ResetPassword /> : <Navigate to="/" />}
-            />
           </Routes>
         </div>
         <Footer />
