@@ -38,10 +38,10 @@ const HorizentalGraph = ({ startDate, endDate, holidayArray }) => {
 
   return (
     <>
-      <div className="text-gray-400 font-normal mb-5 mx-2">Details</div>
+      <div className="text-gray-400 font-normal mb-5 mx-2 text-center">This month summary</div>
       <div className="flex mb-3 md:mb-[25px]">
         <HorizentalGraphItem
-          title="Holidays"
+          title="Week off & Holidays"
           value={summary.holidays}
           color="bg-green-500"
           textColor="text-green-500"

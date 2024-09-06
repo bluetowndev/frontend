@@ -25,9 +25,10 @@ const Home = () => {
             </div>
             <div className="md:w-1/2 w-full">
               <div className="mb-3 md:mb-[50px]">
-                <HorizentalGraph startDate="2024-08-01"
-                  endDate="2024-08-30"
-                  holidayArray={["2024-09-04", "2024-09-11", "2024-09-18", "2024-09-25"]} />
+                <HorizentalGraph startDate="2024-09-01" //enter the startdate of every month beginning
+                  endDate="2024-09-30" //enter the enddate of every month beginning
+                  //enter the list of dates of holiday at beginning of every month
+                  holidayArray={["2024-09-01", "2024-09-08", "2024-09-15", "2024-09-16", "2024-09-22", "2024-09-29"]} />
               </div>
               <div>
                 <VerticalGraph />
