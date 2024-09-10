@@ -10,7 +10,7 @@ const highlightedCountries = [
   { name: "Ghana", coordinates: [-1.0232, 7.9465] },
 ];
 
-const WorldMapAdmin = () => {
+const WorldMapStateHead = () => {
   return (
     <ComposableMap>
       <Geographies geography={geoUrl}>
@@ -29,4 +29,4 @@ const WorldMapAdmin = () => {
   );
 };
 
-export default WorldMapAdmin;
+export default WorldMapStateHead;

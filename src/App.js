@@ -9,7 +9,7 @@ import Navbar from "./components/Navbar";
 import AdminDashboard from "./pages/AdminDashboard";
 import Footer from "./components/Footer";
 import { Toaster } from 'react-hot-toast';
-
+import StateheadDashboard from "./pages/StateheadDashboard";
 function App() {
   const { user } = useAuthContext();
 
@@ -20,7 +20,7 @@ function App() {
         <Navbar />
         <div className="flex-grow">
           <Routes>
-            <Route
+            {/*<Route 
               path="/"
               element={
                 user ? (
@@ -53,7 +53,13 @@ function App() {
                   <Navigate to="/" />
                 )
               }
-            />
+            />*/}
+            <Route
+              path="/statehead-dashboard"
+              element={
+                <StateheadDashboard/>
+              }
+            /> 
           </Routes>
         </div>
         <Footer />
