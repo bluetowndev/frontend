@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import WorldMap_StateHead from "../components/StateHead/WorldMapStateHead";
+import WorldMapStateHead from "../components/StateHead/WorldMapStateHead";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import * as XLSX from 'xlsx';
@@ -9,11 +9,7 @@ import { format, subMonths } from 'date-fns'; // For date formatting and handlin
 const apiUrl = process.env.REACT_APP_API_URL || '';
 
 const statesAndUTs = [
-  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chandigarh", "Chhattisgarh", 
-  "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", 
-  "Jammu and Kashmir", "Jharkhand", "Karnataka", "Kerala", "Ladakh", "Lakshadweep", "Madhya Pradesh", 
-  "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Puducherry", "Punjab", 
-  "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"
+  "Bihar", "Himachal Pradesh", "Jharkhand", "Madhya Pradesh", "Rajasthan", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"
 ];
 
 const engineers = ["Engineer A", "Engineer B", "Engineer C"]; // Sample engineers
@@ -24,10 +20,13 @@ const StateheadDashboard = () => {
   const [endDate, setEndDate] = useState(null);
   const [attendanceData, setAttendanceData] = useState([]);
   const [currentDateRange, setCurrentDateRange] = useState([]);
+  const [selectedPurpose, setSelectedPurpose] = useState("");
+
   const handleStateChange = (e) => setSelectedState(e.target.value);
   const handleStartDateChange = (date) => setStartDate(date);
   const handleEndDateChange = (date) => setEndDate(date);
-
+  const handlePurposeChange = (e) => setSelectedPurpose(e.target.value);
+ 
   const fetchAttendanceData = useCallback(async () => {
     if (selectedState && startDate) {
       const startInIST = new Date(startDate);
@@ -165,25 +164,23 @@ const StateheadDashboard = () => {
           </div>
         </div>
         <div className="md:w-2/3 lg:w-1/3 w-full">
-          <WorldMap_StateHead />
+          <WorldMapStateHead />
         </div>
       </div>
-
-      {/* Add a filter for previous month */}
-      <button
-          onClick={() => {
-            const dates = getPreviousMonthDates();
-            setStartDate(dates[0]);
-            setEndDate(dates[dates.length - 1]);
-          }}
-          className="bg-blue-500 text-white px-4 py-2 rounded mb-4"
-        >
-          View Previous Month Data
-        </button>
+      {/* Second Dropdown */}
+      <select
+            value={selectedPurpose}
+            onChange={handlePurposeChange}
+            className="p-2 border rounded"
+          >
+            <option value="">Select Purpose</option>
+            <option value="Purpose 1">Purpose 1</option>
+            <option value="Purpose 2">Purpose 2</option>
+            <option value="Purpose 3">Purpose 3</option>
+          </select>
       
       {/* Site Count Table with Engineers as rows and Dates as columns */}
       <div className="mt-8">
-        <h2 className="text-xl font-bold mb-4">The Site Count</h2>
         <div className="overflow-x-auto overflow-y-auto" style={{ maxHeight: '300px' }}>
           <table className="table-auto w-full border-collapse border">
             <thead>

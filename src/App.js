@@ -10,22 +10,25 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Footer from "./components/Footer";
 import { Toaster } from 'react-hot-toast';
 import StateheadDashboard from "./pages/StateheadDashboard";
+
 function App() {
   const { user } = useAuthContext();
 
   return (
     <div className="flex flex-col min-h-screen">
       <BrowserRouter>
-      <Toaster/>
+        <Toaster />
         <Navbar />
         <div className="flex-grow">
           <Routes>
-            {/*<Route 
+            <Route
               path="/"
               element={
                 user ? (
                   user.role === "admin" ? (
                     <Navigate to="/admin-dashboard" />
+                  ) : user.role === "statehead" ? (
+                    <Navigate to="/statehead-dashboard" />
                   ) : (
                     <Home />
                   )
@@ -53,13 +56,17 @@ function App() {
                   <Navigate to="/" />
                 )
               }
-            />*/}
+            />
             <Route
               path="/statehead-dashboard"
               element={
-                <StateheadDashboard/>
+                user && user.role === "statehead" ? (
+                  <StateheadDashboard />
+                ) : (
+                  <Navigate to="/" />
+                )
               }
-            /> 
+            />
           </Routes>
         </div>
         <Footer />
