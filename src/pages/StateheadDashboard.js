@@ -4,7 +4,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import * as XLSX from 'xlsx';
 import { toast } from 'react-hot-toast';
-import { format, subMonths } from 'date-fns'; // For date formatting and handling
+import { format, addDays, startOfMonth } from 'date-fns';
 
 const apiUrl = process.env.REACT_APP_API_URL || '';
 
@@ -19,14 +19,15 @@ const StateheadDashboard = () => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [attendanceData, setAttendanceData] = useState([]);
-  const [currentDateRange, setCurrentDateRange] = useState([]);
   const [selectedPurpose, setSelectedPurpose] = useState("");
+  const [currentViewIndex, setCurrentViewIndex] = useState(0); // To track which columns are being viewed
 
   const handleStateChange = (e) => setSelectedState(e.target.value);
   const handleStartDateChange = (date) => setStartDate(date);
   const handleEndDateChange = (date) => setEndDate(date);
   const handlePurposeChange = (e) => setSelectedPurpose(e.target.value);
- 
+
+  // Function to fetch the attendance data
   const fetchAttendanceData = useCallback(async () => {
     if (selectedState && startDate) {
       const startInIST = new Date(startDate);
@@ -92,7 +93,6 @@ const StateheadDashboard = () => {
       'Purpose': att.purpose,
       'Feedback': att.feedback,
       'Reporting Manager': att.user.reportingManager,
-      
     })));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Attendance Data');
@@ -107,25 +107,49 @@ const StateheadDashboard = () => {
     }
   }, [fetchAttendanceData, selectedState, startDate, endDate]);
 
-  // Function to get the previous month's dates (limit to 5)
-  const getPreviousMonthDates = () => {
-    const today = new Date();
-    const previousMonth = subMonths(today, 1);
-    const daysInMonth = new Date(previousMonth.getFullYear(), previousMonth.getMonth() + 1, 0).getDate();
-    
+  // Function to get all dates from the start of the month to today's date
+  const getDatesTillToday = () => {
     const dates = [];
-    for (let i = 1; i <= daysInMonth && dates.length < 5; i++) {
-      dates.push(format(new Date(previousMonth.getFullYear(), previousMonth.getMonth(), i), "yyyy-MM-dd"));
+    const today = new Date(); // Get today's date
+    let currentDate = startOfMonth(today); // Start from the first day of the month
+    while (currentDate <= today) {
+      dates.push(format(currentDate, "yyyy-MM-dd"));
+      currentDate = addDays(currentDate, 1); // Move to the next day
     }
     return dates;
   };
+
+  // Get today's date dynamically
+  const today = new Date();
+
+  // Function to handle the previous 5-day view
+  const handlePrevious = () => {
+    if (currentViewIndex > 0) {
+      setCurrentViewIndex(currentViewIndex - 5);
+    } else {
+      toast.error("No more previous dates");
+    }
+  };
+
+  // Function to handle the next 5-day view
+  const handleNext = () => {
+    const totalColumns = getDatesTillToday().length;
+    if (currentViewIndex + 5 < totalColumns) {
+      setCurrentViewIndex(currentViewIndex + 5);
+    } else {
+      toast.error("No more dates to show");
+    }
+  };
+
+  // Get the current 5-day window to display
+  const visibleDates = getDatesTillToday().slice(currentViewIndex, currentViewIndex + 5);
 
   return (
     <div className="flex flex-col p-4">
       <div className="mb-5 w-full">
         {/* Filter and date picker UI */}
       </div>
-      
+
       <div className="flex flex-col md:flex-row md:mx-5 space-y-5 md:space-y-0 md:space-x-5 flex-grow">
         <div className="md:w-1/3 lg:w-2/3 w-full mb-2 space-y-4">
           <div className="flex flex-col space-y-4">
@@ -167,36 +191,45 @@ const StateheadDashboard = () => {
           <WorldMapStateHead />
         </div>
       </div>
+
       {/* Second Dropdown */}
       <select
-            value={selectedPurpose}
-            onChange={handlePurposeChange}
-            className="p-2 border rounded"
-          >
-            <option value="">Select Purpose</option>
-            <option value="Purpose 1">Purpose 1</option>
-            <option value="Purpose 2">Purpose 2</option>
-            <option value="Purpose 3">Purpose 3</option>
-          </select>
-      
+        value={selectedPurpose}
+        onChange={handlePurposeChange}
+        className="p-2 border rounded"
+      >
+        <option value="">Select Purpose</option>
+        <option value="Purpose 1">Purpose 1</option>
+        <option value="Purpose 2">Purpose 2</option>
+        <option value="Purpose 3">Purpose 3</option>
+      </select>
+
       {/* Site Count Table with Engineers as rows and Dates as columns */}
       <div className="mt-8">
         <div className="overflow-x-auto overflow-y-auto" style={{ maxHeight: '300px' }}>
-          <table className="table-auto w-full border-collapse border">
+          <div className="flex justify-between items-center mb-2">
+            <button onClick={handlePrevious} className="px-4 py-2 bg-gray-300 rounded">
+              &larr; Previous
+            </button>
+            <button onClick={handleNext} className="px-4 py-2 bg-gray-300 rounded">
+              Next &rarr;
+            </button>
+          </div>
+          <table className="min-w-full bg-white">
             <thead>
               <tr>
-                <th className="border p-2">Engineer</th>
-                {getPreviousMonthDates().map((date) => (
-                  <th key={date} className="border p-2">{date}</th>
+                <th className="py-2 px-4 bg-gray-200 border-b">Engineers</th>
+                {visibleDates.map((date, index) => (
+                  <th key={index} className="py-2 px-4 bg-gray-200 border-b">{date}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {engineers.map((engineer) => (
-                <tr key={engineer}>
-                  <td className="border p-2">{engineer}</td>
-                  {getPreviousMonthDates().map((date) => (
-                    <td key={date} className="border p-2">-</td>
+              {engineers.map((engineer, index) => (
+                <tr key={index}>
+                  <td className="py-2 px-4 border-b">{engineer}</td>
+                  {visibleDates.map((date, i) => (
+                    <td key={i} className="py-2 px-4 border-b">{attendanceData[engineer]?.[date] || 'N/A'}</td>
                   ))}
                 </tr>
               ))}
