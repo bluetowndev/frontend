@@ -12,20 +12,18 @@ const statesAndUTs = [
   "Bihar", "Himachal Pradesh", "Jharkhand", "Madhya Pradesh", "Rajasthan", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"
 ];
 
-const engineers = ["Engineer A", "Engineer B", "Engineer C"]; // Sample engineers
-
 const StateheadDashboard = () => {
   const [selectedState, setSelectedState] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [attendanceData, setAttendanceData] = useState([]);
-  const [selectedPurpose, setSelectedPurpose] = useState("");
-  const [currentViewIndex, setCurrentViewIndex] = useState(0); // To track which columns are being viewed
+  const [currentViewIndex, setCurrentViewIndex] = useState(0);
+  const [engineers, setEngineers] = useState([]);
 
   const handleStateChange = (e) => setSelectedState(e.target.value);
   const handleStartDateChange = (date) => setStartDate(date);
   const handleEndDateChange = (date) => setEndDate(date);
-  const handlePurposeChange = (e) => setSelectedPurpose(e.target.value);
+
 
   // Function to fetch the attendance data
   const fetchAttendanceData = useCallback(async () => {
@@ -119,30 +117,33 @@ const StateheadDashboard = () => {
     return dates;
   };
 
-  // Get today's date dynamically
-  const today = new Date();
+  const fetchEngineers = useCallback(async () => {
+    if (selectedState) {
+      try {
+        const response = await fetch(`${apiUrl}/api/user/engineers?state=${selectedState}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
 
-  // Function to handle the previous 5-day view
-  const handlePrevious = () => {
-    if (currentViewIndex > 0) {
-      setCurrentViewIndex(currentViewIndex - 5);
-    } else {
-      toast.error("No more previous dates");
+        const data = await response.json();
+        if (response.ok) {
+          setEngineers(data); // Set dynamic engineers list
+        } else {
+          console.error('Failed to fetch engineers:', data.error);
+          toast.error('Failed to fetch engineers');
+        }
+      } catch (error) {
+        console.error('An error occurred while fetching engineers:', error);
+        toast.error('An error occurred while fetching engineers');
+      }
     }
-  };
+  }, [selectedState]);
 
-  // Function to handle the next 5-day view
-  const handleNext = () => {
-    const totalColumns = getDatesTillToday().length;
-    if (currentViewIndex + 5 < totalColumns) {
-      setCurrentViewIndex(currentViewIndex + 5);
-    } else {
-      toast.error("No more dates to show");
-    }
-  };
-
-  // Get the current 5-day window to display
-  const visibleDates = getDatesTillToday().slice(currentViewIndex, currentViewIndex + 5);
+  useEffect(() => {
+    fetchEngineers(); // Fetch engineers when state changes
+  }, [fetchEngineers, selectedState]);
 
   return (
     <div className="flex flex-col p-4">
@@ -163,6 +164,7 @@ const StateheadDashboard = () => {
                 <option key={state} value={state}>{state}</option>
               ))}
             </select>
+            {/* Date picker */}
             <div className="flex flex-col space-y-2">
               <DatePicker
                 selected={startDate}
@@ -179,6 +181,7 @@ const StateheadDashboard = () => {
                 placeholderText="Select End Date"
               />
             </div>
+
             <button
               onClick={() => downloadExcel(attendanceData, 'attendance_data')}
               className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition duration-300 w-full"
@@ -192,34 +195,14 @@ const StateheadDashboard = () => {
         </div>
       </div>
 
-      {/* Second Dropdown */}
-      <select
-        value={selectedPurpose}
-        onChange={handlePurposeChange}
-        className="p-2 border rounded"
-      >
-        <option value="">Select Purpose</option>
-        <option value="Purpose 1">Purpose 1</option>
-        <option value="Purpose 2">Purpose 2</option>
-        <option value="Purpose 3">Purpose 3</option>
-      </select>
-
-      {/* Site Count Table with Engineers as rows and Dates as columns */}
+      {/* Table displaying engineers and attendance data */}
       <div className="mt-8">
         <div className="overflow-x-auto overflow-y-auto" style={{ maxHeight: '300px' }}>
-          <div className="flex justify-between items-center mb-2">
-            <button onClick={handlePrevious} className="px-4 py-2 bg-gray-300 rounded">
-              &larr; Previous
-            </button>
-            <button onClick={handleNext} className="px-4 py-2 bg-gray-300 rounded">
-              Next &rarr;
-            </button>
-          </div>
           <table className="min-w-full bg-white">
             <thead>
               <tr>
                 <th className="py-2 px-4 bg-gray-200 border-b">Engineers</th>
-                {visibleDates.map((date, index) => (
+                {getDatesTillToday().slice(currentViewIndex, currentViewIndex + 5).map((date, index) => (
                   <th key={index} className="py-2 px-4 bg-gray-200 border-b">{date}</th>
                 ))}
               </tr>
@@ -227,9 +210,9 @@ const StateheadDashboard = () => {
             <tbody>
               {engineers.map((engineer, index) => (
                 <tr key={index}>
-                  <td className="py-2 px-4 border-b">{engineer}</td>
-                  {visibleDates.map((date, i) => (
-                    <td key={i} className="py-2 px-4 border-b">{attendanceData[engineer]?.[date] || 'N/A'}</td>
+                  <td className="py-2 px-4 border-b">{engineer.fullName}</td>
+                  {getDatesTillToday().slice(currentViewIndex, currentViewIndex + 5).map((date, i) => (
+                    <td key={i} className="py-2 px-4 border-b">{attendanceData[engineer.fullName]?.[date] || 'N/A'}</td>
                   ))}
                 </tr>
               ))}

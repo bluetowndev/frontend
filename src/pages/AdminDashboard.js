@@ -10,11 +10,7 @@ import { toast } from 'react-hot-toast';
 const apiUrl = process.env.REACT_APP_API_URL || '';
 
 const statesAndUTs = [
-  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chandigarh", "Chhattisgarh", 
-  "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", 
-  "Jammu and Kashmir", "Jharkhand", "Karnataka", "Kerala", "Ladakh", "Lakshadweep", "Madhya Pradesh", 
-  "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Puducherry", "Punjab", 
-  "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"
+  "Bihar", "Himachal Pradesh", "Jharkhand", "Madhya Pradesh", "Rajasthan", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "all"
 ];
 
 const AdminDashboard = () => {
@@ -36,30 +32,31 @@ const AdminDashboard = () => {
     if (selectedState && startDate) {
       const startInIST = new Date(startDate);
       startInIST.setMinutes(startInIST.getMinutes() + 330); // Convert to IST
-
+  
       const endInIST = endDate ? new Date(endDate) : new Date(startInIST);
       endInIST.setMinutes(endInIST.getMinutes() + 330); // Convert to IST
-
+  
       const user = JSON.parse(localStorage.getItem('user')); // Get user from local storage
       const token = user ? user.token : null; // Extract token from user object
-
+  
       if (!token) {
         toast.error('No token found');
         return;
       }
-
+  
       setFetchingData(true);
       try {
-        const response = await fetch(`${apiUrl}/api/attendance/filtered?state=${selectedState}&startDate=${startInIST.toISOString().split('T')[0]}&endDate=${endInIST.toISOString().split('T')[0]}`, {
+        const stateQueryParam = selectedState === "all" ? "" : `state=${selectedState}&`;
+        const response = await fetch(`${apiUrl}/api/attendance/filtered?${stateQueryParam}startDate=${startInIST.toISOString().split('T')[0]}&endDate=${endInIST.toISOString().split('T')[0]}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
           }
         });
-
+  
         const data = await response.json();
-
+  
         if (response.ok) {
           setAttendanceData(data);
           toast.success('Attendance data fetched successfully');
@@ -75,6 +72,7 @@ const AdminDashboard = () => {
       }
     }
   }, [selectedState, startDate, endDate]);
+  
 
   const fetchUserData = async () => {
     if (searchEmail) {
@@ -139,6 +137,7 @@ const AdminDashboard = () => {
     const ws = XLSX.utils.json_to_sheet(data.map(att => ({
       'Email': att.user.email,
       'Name': att.user.fullName,
+      'State': att.user.state,
       'Mobile Number': att.user.phoneNumber,
       'Login details': convertToIST(att.timestamp),
       'Location Latitude': att.location.lat,
