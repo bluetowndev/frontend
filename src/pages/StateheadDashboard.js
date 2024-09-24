@@ -4,7 +4,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import * as XLSX from 'xlsx';
 import { toast } from 'react-hot-toast';
-import { format, addDays, startOfMonth } from 'date-fns';
+//import { format, addDays, startOfMonth } from 'date-fns';
 
 const apiUrl = process.env.REACT_APP_API_URL || '';
 
@@ -19,11 +19,11 @@ const StateheadDashboard = () => {
   const [attendanceData, setAttendanceData] = useState([]);
   const [currentViewIndex, setCurrentViewIndex] = useState(0);
   const [engineers, setEngineers] = useState([]);
+  const [dates, setDates] = useState([]);
 
   const handleStateChange = (e) => setSelectedState(e.target.value);
   const handleStartDateChange = (date) => setStartDate(date);
   const handleEndDateChange = (date) => setEndDate(date);
-
 
   // Function to fetch the attendance data
   const fetchAttendanceData = useCallback(async () => {
@@ -105,18 +105,15 @@ const StateheadDashboard = () => {
     }
   }, [fetchAttendanceData, selectedState, startDate, endDate]);
 
-  // Function to get all dates from the start of the month to today's date
-  const getDatesTillToday = () => {
-    const dates = [];
-    const today = new Date(); // Get today's date
-    let currentDate = startOfMonth(today); // Start from the first day of the month
-    while (currentDate <= today) {
-      dates.push(format(currentDate, "yyyy-MM-dd"));
-      currentDate = addDays(currentDate, 1); // Move to the next day
-    }
-    return dates;
+  
+
+  // Function to filter out future dates
+  const getFilteredDates = () => {
+    const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+    return dates.filter(date => date <= today); // Only return past and present dates
   };
 
+  // Function to fetch engineers and dates from backend
   const fetchEngineers = useCallback(async () => {
     if (selectedState) {
       try {
@@ -129,7 +126,8 @@ const StateheadDashboard = () => {
 
         const data = await response.json();
         if (response.ok) {
-          setEngineers(data); // Set dynamic engineers list
+          setEngineers(data.engineers); // Set dynamic engineers list
+          setDates(data.dates); // Set dynamic dates list
         } else {
           console.error('Failed to fetch engineers:', data.error);
           toast.error('Failed to fetch engineers');
@@ -142,8 +140,9 @@ const StateheadDashboard = () => {
   }, [selectedState]);
 
   useEffect(() => {
-    fetchEngineers(); // Fetch engineers when state changes
-  }, [fetchEngineers, selectedState]);
+    fetchEngineers();
+  }, [fetchEngineers]);
+
 
   return (
     <div className="flex flex-col p-4">
@@ -197,28 +196,49 @@ const StateheadDashboard = () => {
 
       {/* Table displaying engineers and attendance data */}
       <div className="mt-8">
-        <div className="overflow-x-auto overflow-y-auto" style={{ maxHeight: '300px' }}>
-          <table className="min-w-full bg-white">
-            <thead>
-              <tr>
-                <th className="py-2 px-4 bg-gray-200 border-b">Engineers</th>
-                {getDatesTillToday().slice(currentViewIndex, currentViewIndex + 5).map((date, index) => (
-                  <th key={index} className="py-2 px-4 bg-gray-200 border-b">{date}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {engineers.map((engineer, index) => (
-                <tr key={index}>
-                  <td className="py-2 px-4 border-b">{engineer.fullName}</td>
-                  {getDatesTillToday().slice(currentViewIndex, currentViewIndex + 5).map((date, i) => (
-                    <td key={i} className="py-2 px-4 border-b">{attendanceData[engineer.fullName]?.[date] || 'N/A'}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="flex justify-between mb-2">
+          <button
+            onClick={() => setCurrentViewIndex(prev => Math.max(prev - 5, 0))}
+            disabled={currentViewIndex === 0}
+            className={`px-4 py-2 rounded bg-gray-300 ${currentViewIndex === 0 && 'opacity-50 cursor-not-allowed'}`}
+          >
+            Previous
+          </button>
+          <button
+            onClick={() => setCurrentViewIndex(prev => Math.min(prev + 5, getFilteredDates().length))}
+            disabled={currentViewIndex + 5 >= getFilteredDates().length}
+            className={`px-4 py-2 rounded bg-gray-300 ${currentViewIndex + 5 >= getFilteredDates().length && 'opacity-50 cursor-not-allowed'}`}
+          >
+            Next
+          </button>
         </div>
+
+        {/* Table */}
+        <table className="table-auto w-full border-collapse border border-gray-400">
+          <thead>
+            <tr>
+              <th className="border border-gray-400 px-4 py-2">Engineer</th>
+              {getFilteredDates().slice(currentViewIndex, currentViewIndex + 5).map((date) => (
+                <th key={date} className="border border-gray-400 px-4 py-2">{date}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {engineers.map((engineer, index) => (
+              <tr key={index}>
+                <td className="py-2 px-4 border-b">{engineer.fullName}</td>
+                {getFilteredDates().slice(currentViewIndex, currentViewIndex + 5).map((date, i) => {
+                  const attendanceEntry = engineer.attendanceByDate.find(entry => entry.date === date);
+                  return (
+                    <td key={i} className="py-2 px-4 border-b">
+                      {attendanceEntry ? attendanceEntry.count : '0'}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
