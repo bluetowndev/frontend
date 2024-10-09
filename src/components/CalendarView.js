@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css'; // Import the styles for the calendar
+import 'react-calendar/dist/Calendar.css'; 
 import { useAttendance } from '../hooks/useAttendance';
-import Modal from './Modal'; // Import the Modal component
+import Modal from './Modal';
 
 const CalendarView = () => {
   const [selectedDate, setSelectedDate] = useState(null);
@@ -26,26 +26,21 @@ const CalendarView = () => {
   };
 
   const calculateTotalDistance = () => {
-    // Convert distances to meters and sum them
     const totalMeters = attendanceData.reduce((total, attendance) => {
-      let distance = attendance.distanceFromPrevious || "0 m"; // Default to "0 m" if undefined
+      let distance = attendance.distanceFromPrevious || "0 m";
   
       if (distance.includes("km")) {
-        // Convert km to meters
         distance = parseFloat(distance) * 1000;
       } else if (distance.includes("m")) {
-        // Convert m to meters (just parse as float)
         distance = parseFloat(distance);
       }
   
       return total + distance;
     }, 0);
-  
-    // Convert back to km and m for display
+
     const kilometers = Math.floor(totalMeters / 1000);
     const meters = totalMeters % 1000;
-  
-    // Return formatted distance string
+
     return `${kilometers > 0 ? `${kilometers} km ` : ""}${meters} m`;
   };
 
@@ -71,14 +66,14 @@ const CalendarView = () => {
                   <p>Latitude: {attendance.location.lat}</p>
                   <p>Longitude: {attendance.location.lng}</p>
                   <p>Location: {attendance.locationName || "Loading..."}</p>
-                  {attendance.distanceFromPrevious && (
-                    <p>Distance from previous: {attendance.distanceFromPrevious} meters</p>
-                  )}
+                  {/* {attendance.distanceFromPrevious && (
+                    <p>Distance from previous: {attendance.distanceFromPrevious}</p>
+                  )} */}
                   <img src={attendance.image} alt="Attendance" className="mt-2 w-32 h-32 object-cover rounded" />
                 </div>
               ))}
               <div className="border-t mt-4 pt-2">
-                <b>Total Distance: {calculateTotalDistance()} meters</b>
+                <b>Total Distance: {calculateTotalDistance()}</b>
               </div>
             </>
           ) : (
