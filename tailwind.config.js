@@ -11,6 +11,7 @@ module.exports = {
       },
       fontFamily: {
         poppins: ['Poppins', 'sans-serif'],
+        lora: ['Lora', 'serif'],
         vt323: ['VT323', 'monospace'],
       },
     },

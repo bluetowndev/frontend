@@ -31,12 +31,14 @@ const Navbar = () => {
                 Log out
               </button>
             ) : (
-              <Link
-                to="/login"
-                className="text-white bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 transition duration-300"
-              >
-                Login
-              </Link>
+              // Commenting out the Login button
+              // <Link
+              //   to="/login"
+              //   className="text-white bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 transition duration-300"
+              // >
+              //   Login
+              // </Link>
+              null // Alternatively, use null to render nothing
             )}
           </div>
         </div>
@@ -61,12 +63,14 @@ const Navbar = () => {
           )}
           {!user && (
             <div className="hidden md:block">
+              {/* Commenting out the Login button
               <Link
                 to="/login"
                 className="text-white bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 transition duration-300"
               >
                 Login
               </Link>
+              */}
             </div>
           )}
         </nav>
