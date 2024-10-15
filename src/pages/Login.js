@@ -3,6 +3,7 @@ import { useLogin } from "../hooks/useLogin";
 import GeminiWave from "../components/sync/GeminiWave";
 import GradientShineButton from "../components/sync/GradientShineButton";
 import TypingEffect from "../components/sync/TypingEffect";
+import HorizontalCards from "../components/HorizontalCard"; // Import the HorizontalCards component
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -16,16 +17,16 @@ const Login = () => {
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden flex justify-center items-center bg-gray-50">
+    <div className="relative w-full h-full flex flex-col items-center bg-gray-50">
       {/* GeminiWave animation as background */}
       <div className="absolute inset-0">
         <GeminiWave />
       </div>
 
       {/* Main content container */}
-      <div className="relative z-10 flex flex-col w-full h-full items-center justify-center lg:justify-between p-4 lg:flex-row">
+      <div className="relative z-10 flex flex-col w-full items-center justify-center flex-grow space-y-8 p-4 lg:flex-row">
         
-        {/* Text on top for mobile and left side for large screens */}
+        {/* Text for mobile and left side for large screens */}
         <div className="flex flex-col items-center lg:hidden w-full mb-8">
           <h1 
             className="text-4xl font-bold text-white pb-3 text-center" 
@@ -40,7 +41,7 @@ const Login = () => {
           />
         </div>
 
-        {/* Text for larger screens on the left side */}
+        {/* Text for large screens */}
         <div className="hidden lg:flex lg:items-center lg:justify-center lg:w-1/2 lg:min-h-screen">
           <div className="text-center">
             <h1 
@@ -57,9 +58,8 @@ const Login = () => {
           </div>
         </div>
 
-        {/* Login form on the right side for larger screens and below the text for mobile */}
+        {/* Login form */}
         <div className="relative z-10 w-full max-w-md p-8 m-5 bg-white/70 rounded-xl shadow-2xl backdrop-blur-md bg-opacity-80 lg:w-1/3">
-          {/* Login form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <input 
@@ -92,7 +92,6 @@ const Login = () => {
               </div>
             </div>
 
-            {/* Button with centered alignment */}
             <div className="flex justify-center mt-6">
               <GradientShineButton
                 type="submit" 
@@ -109,6 +108,20 @@ const Login = () => {
             )}
           </form>
         </div>
+      </div>
+
+      {/* Heading and Cards Section */}
+      <div className="w-full mt-10 pb-4 text-center relative z-20">
+        {/* Centered heading for "Today's non compliance" */}
+        <h2 
+          className="text-4xl font-bold text-white mb-6"
+          style={{ fontFamily: "'Playfair Display', serif" }}
+        >
+          Today's Non Compliance
+        </h2>
+
+        {/* Horizontal Cards placed just below the heading */}
+        <HorizontalCards />
       </div>
     </div>
   );

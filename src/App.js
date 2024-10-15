@@ -19,6 +19,8 @@ function App() {
       <BrowserRouter>
         <Toaster />
         <Navbar />
+
+        {/* Main content area */}
         <div className="flex-grow">
           <Routes>
             <Route
@@ -69,6 +71,8 @@ function App() {
             />
           </Routes>
         </div>
+
+        {/* Footer component stays at the bottom */}
         <Footer />
       </BrowserRouter>
     </div>
