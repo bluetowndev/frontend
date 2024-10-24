@@ -14,6 +14,14 @@ const Camera = ({onClose}) => {
   const navigate = useNavigate();
   const [isCameraOpen, setIsCameraOpen] = useState(true);
 
+  // List of options that require feedback
+  const mandatoryFeedbackOptions = [
+    "BSNL Office Visit",
+    "New Site Survey",
+    "Official Tour - Out of Station",
+    "New Business Generation - Client Meeting",
+  ];
+
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -41,6 +49,12 @@ const Camera = ({onClose}) => {
 
   const handleSubmit = async () => {
     try {
+      // Check if feedback is mandatory and empty
+      if (mandatoryFeedbackOptions.includes(selectedOption) && feedback.trim() === "") {
+        toast.error("Details are required for the selected purpose of visit.");
+        return;
+      }
+
       const userId = JSON.parse(localStorage.getItem("user"))._id;
       await markAttendance(imageSrc, location, userId, selectedOption, feedback); // Include selectedOption
 
@@ -52,11 +66,7 @@ const Camera = ({onClose}) => {
       }
       onClose();
 
-      // Close the camera component
-      // setIsCameraOpen(false);
-
       // Navigate to home page
-      // toast.success("Attendance submitted successfully!");
       navigate("/");
     } catch (error) {
       console.error("Error submitting attendance:", error);
@@ -111,31 +121,29 @@ const Camera = ({onClose}) => {
             >
               <option value="" disabled>Select an option</option>
               <option value="Check In">Check In</option>
-              <option value="Site Visit">Site Visit</option>
+              <option value="Site Visit">Existing Site Visit</option>
               <option value="BSNL Office Visit">BSNL Office Visit</option>
               <option value="BT Office Visit">BT Office Visit</option>
               <option value="New Site Survey">New Site Survey</option>
               <option value="Official Tour - Out of Station">Official Tour - Out of Station</option>
               <option value="New Business Generation - Client Meeting">New Business Generation - Client Meeting</option>
               <option value="Existing Client Meeting">Existing Client Meeting</option>
-              <option value="Preventive Measures">Preventive Measures</option>
+              <option value="Preventive Measures">Preventive Site Visit</option>
               <option value="On Leave">On Leave</option>
               <option value="Others">Others</option>
               <option value="Check Out">Check Out</option>
             </select>
 
             {/* Feedback text box */}
-            <label htmlFor="feedback" className="mt-4 block text-gray-700">Remark (max 50 characters):</label>
+            <label htmlFor="feedback" className="mt-4 block text-gray-700">Details (max 50 characters):</label>
             <input
               type="text"
               id="feedback"
               value={feedback}
               onChange={(e) => setFeedback(e.target.value.slice(0, 50))} // Limit to 50 characters
               className="mt-2 p-2 border border-gray-300 rounded-lg"
-              placeholder="Enter Remark"
+              placeholder="Enter Details"
             />
-
-            
 
             <button
               onClick={handleSubmit}
