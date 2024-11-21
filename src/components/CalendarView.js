@@ -1,47 +1,95 @@
 import React, { useState } from "react";
-import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css'; 
-import { useAttendance } from '../hooks/useAttendance';
-import Modal from './Modal';
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
+import { useAttendance } from "../hooks/useAttendance";
+import Modal from "./Modal";
+import toast from "react-hot-toast";
 
 const CalendarView = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [attendanceData, setAttendanceData] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const { fetchAttendanceByDate } = useAttendance();
+  const apiUrl = process.env.REACT_APP_API_URL || "";
 
   const handleDateClick = async (date) => {
-    const formattedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())).toISOString().split('T')[0];
+    const formattedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+      .toISOString()
+      .split("T")[0];
     setSelectedDate(formattedDate);
 
     const data = await fetchAttendanceByDate(formattedDate);
     setAttendanceData(data);
     setShowModal(true);
+
+    // Automatically calculate and save the total distance
+    if (data.length > 0) {
+      calculateAndSaveTotalDistance(data, formattedDate);
+    }
   };
 
   const convertToIST = (timestamp) => {
     const date = new Date(timestamp);
-    const options = { timeZone: 'Asia/Kolkata', hour12: true, hour: 'numeric', minute: 'numeric', second: 'numeric' };
-    return date.toLocaleTimeString('en-IN', options);
+    const options = {
+      timeZone: "Asia/Kolkata",
+      hour12: true,
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+    };
+    return date.toLocaleTimeString("en-IN", options);
   };
 
-  const calculateTotalDistance = () => {
+  const calculateTotalDistance = (attendanceData) => {
     const totalMeters = attendanceData.reduce((total, attendance) => {
       let distance = attendance.distanceFromPrevious || "0 m";
-  
+
       if (distance.includes("km")) {
         distance = parseFloat(distance) * 1000;
       } else if (distance.includes("m")) {
         distance = parseFloat(distance);
       }
-  
-      return total + distance;
+
+      return total + distance; // Accumulate the total in meters
     }, 0);
 
-    const kilometers = Math.floor(totalMeters / 1000);
-    const meters = totalMeters % 1000;
+    const totalKilometers = totalMeters / 1000; // Convert meters to kilometers
+    return totalKilometers; // Return numeric value in kilometers
+  };
 
-    return `${kilometers > 0 ? `${kilometers} km ` : ""}${meters} m`;
+  const calculateAndSaveTotalDistance = async (attendanceData, date) => {
+    try {
+      const userData = JSON.parse(localStorage.getItem("user"));
+      const token = userData?.token;
+
+      if (!token) {
+        toast.error("User not authenticated!");
+        return;
+      }
+
+      const totalDistance = calculateTotalDistance(attendanceData); // Numeric distance in kilometers
+
+      const response = await fetch(`${apiUrl}/api/attendance/save-total-distance`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          date,
+          totalDistance, // Send numeric distance in km
+        }),
+      });
+
+      if (response.ok) {
+        toast.success("Total distance saved successfully!");
+      } else {
+        const error = await response.json();
+        toast.error(error.message || "Failed to save total distance.");
+      }
+    } catch (error) {
+      toast.error("Failed to save total distance.");
+    }
   };
 
   return (
@@ -66,14 +114,17 @@ const CalendarView = () => {
                   <p>Latitude: {attendance.location.lat}</p>
                   <p>Longitude: {attendance.location.lng}</p>
                   <p>Location: {attendance.locationName || "Loading..."}</p>
-                  {/* {attendance.distanceFromPrevious && (
-                    <p>Distance from previous: {attendance.distanceFromPrevious}</p>
-                  )} */}
-                  <img src={attendance.image} alt="Attendance" className="mt-2 w-32 h-32 object-cover rounded" />
+                  <img
+                    src={attendance.image}
+                    alt="Attendance"
+                    className="mt-2 w-32 h-32 object-cover rounded"
+                  />
                 </div>
               ))}
-              <div className="border-t mt-4 pt-2">
-                <b>Total Distance: {calculateTotalDistance()}</b>
+              <div className="border-t mt-4 pt-2 text-center">
+                <b className="block text-lg mb-4">
+                  Total Distance: {calculateTotalDistance(attendanceData)} km
+                </b>
               </div>
             </>
           ) : (
