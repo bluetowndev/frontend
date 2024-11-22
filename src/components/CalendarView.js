@@ -3,14 +3,12 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { useAttendance } from "../hooks/useAttendance";
 import Modal from "./Modal";
-import toast from "react-hot-toast";
 
 const CalendarView = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [attendanceData, setAttendanceData] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const { fetchAttendanceByDate } = useAttendance();
-  const apiUrl = process.env.REACT_APP_API_URL || "";
 
   const handleDateClick = async (date) => {
     const formattedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
@@ -23,9 +21,9 @@ const CalendarView = () => {
     setShowModal(true);
 
     // Automatically calculate and save the total distance
-    if (data.length > 0) {
-      calculateAndSaveTotalDistance(data, formattedDate);
-    }
+    // if (data.length > 0) {
+    //   calculateAndSaveTotalDistance(data, formattedDate);
+    // }
   };
 
   const convertToIST = (timestamp) => {
@@ -57,40 +55,40 @@ const CalendarView = () => {
     return totalKilometers; // Return numeric value in kilometers
   };
 
-  const calculateAndSaveTotalDistance = async (attendanceData, date) => {
-    try {
-      const userData = JSON.parse(localStorage.getItem("user"));
-      const token = userData?.token;
+  // const calculateAndSaveTotalDistance = async (attendanceData, date) => {
+  //   try {
+  //     const userData = JSON.parse(localStorage.getItem("user"));
+  //     const token = userData?.token;
 
-      if (!token) {
-        toast.error("User not authenticated!");
-        return;
-      }
+  //     if (!token) {
+  //       toast.error("User not authenticated!");
+  //       return;
+  //     }
 
-      const totalDistance = calculateTotalDistance(attendanceData); // Numeric distance in kilometers
+  //     const totalDistance = calculateTotalDistance(attendanceData); // Numeric distance in kilometers
 
-      const response = await fetch(`${apiUrl}/api/attendance/save-total-distance`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          date,
-          totalDistance, // Send numeric distance in km
-        }),
-      });
+  //     const response = await fetch(`${apiUrl}/api/attendance/save-total-distance`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       body: JSON.stringify({
+  //         date,
+  //         totalDistance, // Send numeric distance in km
+  //       }),
+  //     });
 
-      if (response.ok) {
-        toast.success("Total distance saved successfully!");
-      } else {
-        const error = await response.json();
-        toast.error(error.message || "Failed to save total distance.");
-      }
-    } catch (error) {
-      toast.error("Failed to save total distance.");
-    }
-  };
+  //     if (response.ok) {
+  //       toast.success("Total distance saved successfully!");
+  //     } else {
+  //       const error = await response.json();
+  //       toast.error(error.message || "Failed to save total distance.");
+  //     }
+  //   } catch (error) {
+  //     toast.error("Failed to save total distance.");
+  //   }
+  // };
 
   return (
     <>
