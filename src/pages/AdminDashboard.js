@@ -133,28 +133,67 @@ const AdminDashboard = () => {
       toast.error("No data to download");
       return;
     }
-
-    const ws = XLSX.utils.json_to_sheet(data.map(att => ({
-      'Email': att.user.email,
-      'Name': att.user.fullName,
-      'State': att.user.state,
-      'Mobile Number': att.user.phoneNumber,
-      'Login details': convertToIST(att.timestamp),
-      'Location Latitude': att.location.lat,
-      'Location Longitude': att.location.lng,
-      'Location Name': att.locationName,
-      'Purpose': att.purpose,
-      'Feedback': att.feedback,
-      'Reporting Manager': att.user.reportingManager,
-      
-    })));
+  
+    // Process data to group by user and date
+    const groupedData = {};
+  
+    data.forEach((entry) => {
+      const userId = entry.user.email;
+      const date = convertToIST(entry.timestamp).split(" ")[0]; // Extract only the date
+  
+      // Initialize group if not already present
+      if (!groupedData[userId]) {
+        groupedData[userId] = {};
+      }
+      if (!groupedData[userId][date]) {
+        groupedData[userId][date] = [];
+      }
+  
+      // Add the entry to the respective group
+      groupedData[userId][date].push(entry);
+    });
+  
+    // Prepare rows for Excel with sequential headings
+    const excelRows = [];
+    Object.keys(groupedData).forEach((userId) => {
+      Object.keys(groupedData[userId]).forEach((date) => {
+        const entries = groupedData[userId][date];
+        const baseRow = {
+          Email: entries[0].user.email,
+          Name: entries[0].user.fullName,
+          State: entries[0].user.state,
+          "Mobile Number": entries[0].user.phoneNumber,
+          Date: date,
+          "Reporting Manager": entries[0].user.reportingManager,
+        };
+  
+        // Add entries as columns dynamically
+        entries.forEach((entry, index) => {
+          const entryNumber = index + 1;
+          baseRow[`Entry ${entryNumber} - Login Time`] = convertToIST(entry.timestamp);
+          baseRow[`Entry ${entryNumber} - Location Latitude`] = entry.location.lat;
+          baseRow[`Entry ${entryNumber} - Location Longitude`] = entry.location.lng;
+          baseRow[`Entry ${entryNumber} - Location Name`] = entry.locationName;
+          baseRow[`Entry ${entryNumber} - Purpose`] = entry.purpose;
+          baseRow[`Entry ${entryNumber} - Feedback`] = entry.feedback;
+        });
+  
+        excelRows.push(baseRow);
+      });
+    });
+  
+    // Convert to Excel and download
+    const ws = XLSX.utils.json_to_sheet(excelRows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Attendance Data');
-
+  
+    // Download the file
     XLSX.writeFile(wb, `${fileName}.xlsx`);
     toast.success(`${fileName} downloaded successfully`);
   };
-
+ 
+  
+  
   useEffect(() => {
     if (selectedState && startDate) {
       fetchAttendanceData();
