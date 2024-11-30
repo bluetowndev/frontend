@@ -94,7 +94,7 @@ const CalendarView = () => {
                   <p>Location: {attendance.locationName || "Loading..."}</p>
                   {index > 0 && (
                     <b>
-                      Call Time:{" "}
+                      Transit Time:{" "}
                       {callTimes[index] ? callTimes[index] : "N/A"}
                     </b>
                   )}
