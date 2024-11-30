@@ -21,6 +21,7 @@ const AdminDashboard = () => {
   const [searchEmail, setSearchEmail] = useState("");
   const [userData, setUserData] = useState([]);
   const [error, setError] = useState('');
+  //eslint-disable-next-line
   const [fetchingData, setFetchingData] = useState(false);
 
   const handleStateChange = (e) => setSelectedState(e.target.value);
@@ -146,18 +147,24 @@ const AdminDashboard = () => {
         groupedData[userId] = {};
       }
       if (!groupedData[userId][date]) {
-        groupedData[userId][date] = [];
+        groupedData[userId][date] = {
+          totalDistance: entry.totalDistance || 0,
+          entries: [],
+        };
       }
   
       // Add the entry to the respective group
-      groupedData[userId][date].push(entry);
+      groupedData[userId][date].entries.push(entry);
+      groupedData[userId][date].totalDistance += entry.totalDistance || 0; // Add the distance
     });
   
     // Prepare rows for Excel with sequential headings
     const excelRows = [];
     Object.keys(groupedData).forEach((userId) => {
       Object.keys(groupedData[userId]).forEach((date) => {
-        const entries = groupedData[userId][date];
+        const group = groupedData[userId][date];
+        const entries = group.entries;
+  
         const baseRow = {
           Email: entries[0].user.email,
           Name: entries[0].user.fullName,
@@ -165,6 +172,7 @@ const AdminDashboard = () => {
           "Mobile Number": entries[0].user.phoneNumber,
           Date: date,
           "Reporting Manager": entries[0].user.reportingManager,
+          // "Total Distance (km)": group.totalDistance.toFixed(2), // Add total distance
         };
   
         // Add entries as columns dynamically
@@ -191,7 +199,6 @@ const AdminDashboard = () => {
     XLSX.writeFile(wb, `${fileName}.xlsx`);
     toast.success(`${fileName} downloaded successfully`);
   };
- 
   
   
   useEffect(() => {

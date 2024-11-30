@@ -19,11 +19,6 @@ const CalendarView = () => {
     const data = await fetchAttendanceByDate(formattedDate);
     setAttendanceData(data);
     setShowModal(true);
-
-    // Automatically calculate and save the total distance
-    // if (data.length > 0) {
-    //   calculateAndSaveTotalDistance(data, formattedDate);
-    // }
   };
 
   const convertToIST = (timestamp) => {
@@ -37,6 +32,26 @@ const CalendarView = () => {
     };
     return date.toLocaleTimeString("en-IN", options);
   };
+
+  const calculateCallTime = (attendanceData) => {
+    if (attendanceData.length < 2) return [];
+
+    return attendanceData.map((attendance, index) => {
+      if (index === 0) return null; // No call time for the first entry
+
+      const previousTimestamp = new Date(attendanceData[index - 1].timestamp);
+      const currentTimestamp = new Date(attendance.timestamp);
+
+      const durationInMinutes = Math.floor((currentTimestamp - previousTimestamp) / 60000); // Difference in minutes
+
+      const hours = Math.floor(durationInMinutes / 60);
+      const minutes = durationInMinutes % 60;
+
+      return `${hours > 0 ? `${hours} hr ` : ""}${minutes} min`;
+    });
+  };
+
+  const callTimes = calculateCallTime(attendanceData);
 
   const calculateTotalDistance = (attendanceData) => {
     const totalMeters = attendanceData.reduce((total, attendance) => {
@@ -55,41 +70,6 @@ const CalendarView = () => {
     return totalKilometers; // Return numeric value in kilometers
   };
 
-  // const calculateAndSaveTotalDistance = async (attendanceData, date) => {
-  //   try {
-  //     const userData = JSON.parse(localStorage.getItem("user"));
-  //     const token = userData?.token;
-
-  //     if (!token) {
-  //       toast.error("User not authenticated!");
-  //       return;
-  //     }
-
-  //     const totalDistance = calculateTotalDistance(attendanceData); // Numeric distance in kilometers
-
-  //     const response = await fetch(`${apiUrl}/api/attendance/save-total-distance`, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //       body: JSON.stringify({
-  //         date,
-  //         totalDistance, // Send numeric distance in km
-  //       }),
-  //     });
-
-  //     if (response.ok) {
-  //       toast.success("Total distance saved successfully!");
-  //     } else {
-  //       const error = await response.json();
-  //       toast.error(error.message || "Failed to save total distance.");
-  //     }
-  //   } catch (error) {
-  //     toast.error("Failed to save total distance.");
-  //   }
-  // };
-
   return (
     <>
       <div className="flex mx-2">
@@ -105,13 +85,19 @@ const CalendarView = () => {
         desc={
           attendanceData.length > 0 ? (
             <>
-              {attendanceData.map((attendance) => (
+              {attendanceData.map((attendance, index) => (
                 <div key={attendance._id} className="border p-2 mb-2">
                   <b>Purpose: {attendance.purpose}</b>
                   <p>Time: {convertToIST(attendance.timestamp)}</p>
                   <p>Latitude: {attendance.location.lat}</p>
                   <p>Longitude: {attendance.location.lng}</p>
                   <p>Location: {attendance.locationName || "Loading..."}</p>
+                  {index > 0 && (
+                    <b>
+                      Call Time:{" "}
+                      {callTimes[index] ? callTimes[index] : "N/A"}
+                    </b>
+                  )}
                   <img
                     src={attendance.image}
                     alt="Attendance"
