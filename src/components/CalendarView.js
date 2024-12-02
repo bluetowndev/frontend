@@ -51,7 +51,30 @@ const CalendarView = () => {
     });
   };
 
+  const calculateDistances = (attendanceData) => {
+    if (attendanceData.length < 2) return [];
+
+    return attendanceData.map((attendance, index) => {
+      if (index === 0) return null; // No distance for the first entry
+
+      let distance = attendance.distanceFromPrevious || "0 m";
+      if (distance.includes("km")) {
+        distance = parseFloat(distance) * 1000; // Convert to meters
+      } else if (distance.includes("m")) {
+        distance = parseFloat(distance);
+      }
+      return distance / 1000; // Return distance in kilometers
+    });
+  };
+
+  const generateLabels = (attendanceData) => {
+    const labels = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    return attendanceData.map((_, index) => labels[index] || String.fromCharCode(65 + index));
+  };
+
   const callTimes = calculateCallTime(attendanceData);
+  const distances = calculateDistances(attendanceData);
+  const labels = generateLabels(attendanceData);
 
   const calculateTotalDistance = (attendanceData) => {
     const totalMeters = attendanceData.reduce((total, attendance) => {
@@ -70,6 +93,8 @@ const CalendarView = () => {
     return totalKilometers; // Return numeric value in kilometers
   };
 
+  const totalDistance = calculateTotalDistance(attendanceData);
+
   return (
     <>
       <div className="flex mx-2">
@@ -87,16 +112,25 @@ const CalendarView = () => {
             <>
               {attendanceData.map((attendance, index) => (
                 <div key={attendance._id} className="border p-2 mb-2">
-                  <b>Purpose: {attendance.purpose}</b>
+                  <p>
+                    <b>Purpose: {attendance.purpose} ({labels[index]})</b>
+                  </p>
                   <p>Time: {convertToIST(attendance.timestamp)}</p>
                   <p>Latitude: {attendance.location.lat}</p>
                   <p>Longitude: {attendance.location.lng}</p>
                   <p>Location: {attendance.locationName || "Loading..."}</p>
                   {index > 0 && (
-                    <b>
-                      Transit Time:{" "}
-                      {callTimes[index] ? callTimes[index] : "N/A"}
-                    </b>
+                    <>
+                      <p>
+                        <b>Transit Time:</b> {callTimes[index] ? callTimes[index] : "N/A"} (
+                        {labels[index - 1]} → {labels[index]})
+                      </p>
+                      <p>
+                        <b>Transit Distance:</b>{" "}
+                        {distances[index] ? `${distances[index]} km` : "N/A"} (
+                        {labels[index - 1]} → {labels[index]})
+                      </p>
+                    </>
                   )}
                   <img
                     src={attendance.image}
@@ -107,7 +141,7 @@ const CalendarView = () => {
               ))}
               <div className="border-t mt-4 pt-2 text-center">
                 <b className="block text-lg mb-4">
-                  Total Distance: {calculateTotalDistance(attendanceData)} km
+                  Total Distance: {totalDistance.toFixed(2)} km
                 </b>
               </div>
             </>
