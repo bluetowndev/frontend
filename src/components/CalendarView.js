@@ -113,7 +113,7 @@ const CalendarView = () => {
               {attendanceData.map((attendance, index) => (
                 <div key={attendance._id} className="border p-2 mb-2">
                   <p>
-                    <b>Purpose: {attendance.purpose} ({labels[index]})</b>
+                    <b>Purpose: {attendance.purpose} ({labels[index]}) </b>           
                   </p>
                   <p>Time: {convertToIST(attendance.timestamp)}</p>
                   <p>Latitude: {attendance.location.lat}</p>
