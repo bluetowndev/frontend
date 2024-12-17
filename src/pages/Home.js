@@ -16,6 +16,15 @@ const Home = () => {
   const isDistanceSaved = useRef(false); // Track if saveTodayDistance has been called
 
   useEffect(() => {
+    // Refresh the page every 60 seconds
+    const interval = setInterval(() => {
+      window.location.reload();  // This will reload the page
+    }, 60000);  // 60,000 milliseconds = 1 minute
+
+    return () => clearInterval(interval);  // Cleanup interval on component unmount
+  }, []);
+
+  useEffect(() => {
     const saveTodayDistance = async () => {
       try {
         // Get today's date in IST
@@ -47,34 +56,58 @@ const Home = () => {
   }, [user, fetchAttendanceByDate]);
 
   const calculateTotalDistance = (attendanceData) => {
-    const totalMeters = attendanceData.reduce((total, attendance) => {
-      let distance = attendance.distanceFromPrevious || "0 m";
-
+    let totalMeters = 0;
+    const pointToPointDistances = [];
+  
+    attendanceData.forEach((entry, index) => {
+      let distance = entry.distanceFromPrevious || "0 m";
+      let numericDistance = 0;
+  
       if (distance.includes("km")) {
-        distance = parseFloat(distance) * 1000;
+        numericDistance = parseFloat(distance) * 1000; // Convert km to meters
       } else if (distance.includes("m")) {
-        distance = parseFloat(distance);
+        numericDistance = parseFloat(distance); // Already in meters
       }
-
-      return total + distance;
-    }, 0);
-
-    const totalKilometers = totalMeters / 1000; // Convert meters to kilometers
-    return totalKilometers; // Numeric value in kilometers
+  
+      // Skip the first distance entry (it's always 0)
+      if (index > 0) {
+        totalMeters += numericDistance;
+        
+        // Use letters A, B, C, etc. for the point labels
+        const fromLabel = String.fromCharCode(65 + index - 1);  // Converts index 0 to 'A', 1 to 'B', etc.
+        const toLabel = String.fromCharCode(65 + index); // Converts index 1 to 'B', 2 to 'C', etc.
+  
+        pointToPointDistances.push({
+          from: fromLabel,
+          to: toLabel,
+          distance: numericDistance / 1000, // Store in km
+        });
+      }
+    });
+  
+    const totalKilometers = totalMeters / 1000; // Convert total to km
+  
+    return { totalKilometers, pointToPointDistances };
   };
+  
+  
 
   const calculateAndSaveTotalDistance = async (attendanceData, date) => {
     try {
       const userData = JSON.parse(localStorage.getItem("user"));
       const token = userData?.token;
-
+  
       if (!token) {
         toast.error("User not authenticated!");
         return;
       }
-
-      const totalDistance = calculateTotalDistance(attendanceData);
-
+  
+      // Calculate total distance and point-to-point distances
+      const { totalKilometers, pointToPointDistances } = calculateTotalDistance(attendanceData);
+      
+      // Log the point-to-point distances
+      console.log("Point-to-point distances:", pointToPointDistances);
+  
       const response = await fetch(`${apiUrl}/api/attendance/save-total-distance`, {
         method: "POST",
         headers: {
@@ -83,10 +116,11 @@ const Home = () => {
         },
         body: JSON.stringify({
           date,
-          totalDistance,
+          totalDistance: totalKilometers,
+          pointToPointDistances,  // Ensure pointToPointDistances is passed here
         }),
       });
-
+  
       if (response.ok) {
         toast.success("Total distance saved successfully for today!");
       } else {
@@ -97,6 +131,7 @@ const Home = () => {
       toast.error("Failed to save total distance.");
     }
   };
+ 
 
   if (!user) {
     return null;
@@ -123,7 +158,7 @@ const Home = () => {
                     "2024-12-15",
                     "2024-12-22",
                     "2024-12-25",
-                    "2024-12-29"
+                    "2024-12-29",
                   ]}
                 />
               </div>
