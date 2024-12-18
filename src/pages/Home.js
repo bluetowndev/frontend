@@ -104,9 +104,6 @@ const Home = () => {
   
       // Calculate total distance and point-to-point distances
       const { totalKilometers, pointToPointDistances } = calculateTotalDistance(attendanceData);
-      
-      // Log the point-to-point distances
-      console.log("Point-to-point distances:", pointToPointDistances);
   
       const response = await fetch(`${apiUrl}/api/attendance/save-total-distance`, {
         method: "POST",
@@ -117,20 +114,22 @@ const Home = () => {
         body: JSON.stringify({
           date,
           totalDistance: totalKilometers,
-          pointToPointDistances,  // Ensure pointToPointDistances is passed here
+          pointToPointDistances,
         }),
       });
   
+      const result = await response.json();
+  
       if (response.ok) {
-        toast.success("Total distance saved successfully for today!");
+        toast.success(result.message || "Total distance saved successfully!");
       } else {
-        const error = await response.json();
-        toast.error(error.message || "Failed to save total distance.");
+        toast.error(result.message || "Failed to save total distance.");
       }
     } catch (error) {
       toast.error("Failed to save total distance.");
     }
   };
+  
  
 
   if (!user) {
