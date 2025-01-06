@@ -3,12 +3,14 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { useAttendance } from "../hooks/useAttendance";
 import Modal from "./Modal";
+import { toast } from "react-hot-toast";
 
 const CalendarView = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [attendanceData, setAttendanceData] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const { fetchAttendanceByDate } = useAttendance();
+  const apiUrl = process.env.REACT_APP_API_URL || "";
 
   const handleDateClick = async (date) => {
     const formattedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
@@ -37,12 +39,12 @@ const CalendarView = () => {
     if (attendanceData.length < 2) return [];
 
     return attendanceData.map((attendance, index) => {
-      if (index === 0) return null; // No call time for the first entry
+      if (index === 0) return null;
 
       const previousTimestamp = new Date(attendanceData[index - 1].timestamp);
       const currentTimestamp = new Date(attendance.timestamp);
 
-      const durationInMinutes = Math.floor((currentTimestamp - previousTimestamp) / 60000); // Difference in minutes
+      const durationInMinutes = Math.floor((currentTimestamp - previousTimestamp) / 60000);
 
       const hours = Math.floor(durationInMinutes / 60);
       const minutes = durationInMinutes % 60;
@@ -55,26 +57,17 @@ const CalendarView = () => {
     if (attendanceData.length < 2) return [];
 
     return attendanceData.map((attendance, index) => {
-      if (index === 0) return null; // No distance for the first entry
+      if (index === 0) return null;
 
       let distance = attendance.distanceFromPrevious || "0 m";
       if (distance.includes("km")) {
-        distance = parseFloat(distance) * 1000; // Convert to meters
+        distance = parseFloat(distance) * 1000;
       } else if (distance.includes("m")) {
         distance = parseFloat(distance);
       }
-      return distance / 1000; // Return distance in kilometers
+      return distance / 1000;
     });
   };
-
-  const generateLabels = (attendanceData) => {
-    const labels = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    return attendanceData.map((_, index) => labels[index] || String.fromCharCode(65 + index));
-  };
-
-  const callTimes = calculateCallTime(attendanceData);
-  const distances = calculateDistances(attendanceData);
-  const labels = generateLabels(attendanceData);
 
   const calculateTotalDistance = (attendanceData) => {
     const totalMeters = attendanceData.reduce((total, attendance) => {
@@ -86,14 +79,61 @@ const CalendarView = () => {
         distance = parseFloat(distance);
       }
 
-      return total + distance; // Accumulate the total in meters
+      return total + distance;
     }, 0);
 
-    const totalKilometers = totalMeters / 1000; // Convert meters to kilometers
-    return totalKilometers; // Return numeric value in kilometers
+    return totalMeters / 1000;
   };
 
-  const totalDistance = calculateTotalDistance(attendanceData);
+  const saveDataToDB = async () => {
+    const totalDistance = calculateTotalDistance(attendanceData);
+    const pointToPointDistances = attendanceData
+      .map((attendance, index) => {
+        if (index === 0) return null;
+
+        const distance = calculateDistances(attendanceData)[index];
+        const transitTime = calculateCallTime(attendanceData)[index];
+
+        return {
+          from: attendanceData[index - 1].locationName || "Unknown",
+          to: attendance.locationName || "Unknown",
+          distance,
+          transitTime,
+        };
+      })
+      .filter(Boolean);
+
+    const payload = {
+      date: selectedDate,
+      totalDistance,
+      pointToPointDistances,
+    };
+
+    try {
+      const userData = JSON.parse(localStorage.getItem("user"));
+      const token = userData?.token;
+
+      const response = await fetch(`${apiUrl}/api/attendance/save-total-distance`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        toast.success("Data verified  successfully!");
+      } else {
+        const errorData = await response.json()
+        toast.error(`Failed to verify data: ${errorData.message}`);
+      }
+    } catch (error) {
+      console.error("Error saving data:", error);
+      toast.error("An error occurred while saving data.");
+    }
+  };
 
   return (
     <>
@@ -113,7 +153,9 @@ const CalendarView = () => {
               {attendanceData.map((attendance, index) => (
                 <div key={attendance._id} className="border p-2 mb-2">
                   <p>
-                    <b>Purpose: {attendance.purpose} ({labels[index]}) </b>           
+                    <b>
+                      Purpose: {attendance.purpose} ({String.fromCharCode(65 + index)})
+                    </b>
                   </p>
                   <p>Time: {convertToIST(attendance.timestamp)}</p>
                   <p>Latitude: {attendance.location.lat}</p>
@@ -122,13 +164,13 @@ const CalendarView = () => {
                   {index > 0 && (
                     <>
                       <p>
-                        <b>Transit Time:</b> {callTimes[index] ? callTimes[index] : "N/A"} (
-                        {labels[index - 1]} → {labels[index]})
+                        <b>Transit Time:</b> {calculateCallTime(attendanceData)[index] || "N/A"}
                       </p>
                       <p>
                         <b>Transit Distance:</b>{" "}
-                        {distances[index] ? `${distances[index]} km` : "N/A"} (
-                        {labels[index - 1]} → {labels[index]})
+                        {calculateDistances(attendanceData)[index]
+                          ? `${calculateDistances(attendanceData)[index]} km`
+                          : "N/A"}
                       </p>
                     </>
                   )}
@@ -141,8 +183,14 @@ const CalendarView = () => {
               ))}
               <div className="border-t mt-4 pt-2 text-center">
                 <b className="block text-lg mb-4">
-                  Total Distance: {totalDistance.toFixed(2)} km
+                  Total Distance: {calculateTotalDistance(attendanceData).toFixed(2)} km
                 </b>
+                <button
+                  onClick={saveDataToDB}
+                  className="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600"
+                >
+                  Verify record
+                </button>
               </div>
             </>
           ) : (
