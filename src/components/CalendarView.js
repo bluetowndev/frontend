@@ -161,6 +161,19 @@ const CalendarView = () => {
                   <p>Latitude: {attendance.location.lat}</p>
                   <p>Longitude: {attendance.location.lng}</p>
                   <p>Location: {attendance.locationName || "Loading..."}</p>
+                  {index > 0 && (
+                    <>
+                      <p>
+                        <b>Transit Time:</b> {calculateCallTime(attendanceData)[index] || "N/A"}
+                      </p>
+                      <p>
+                        <b>Transit Distance:</b>{" "}
+                        {calculateDistances(attendanceData)[index]
+                          ? `${calculateDistances(attendanceData)[index]} km`
+                          : "N/A"}
+                      </p>
+                    </>
+                  )}
 
                   {/* Sub-purpose for site visits */}
                   {attendance.purpose === "Site Visit" && attendance.subPurpose && (
