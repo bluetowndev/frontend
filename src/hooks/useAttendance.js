@@ -7,7 +7,7 @@ export const useAttendance = () => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const markAttendance = async (imageSrc, location, userId, purpose, feedback) => {
+  const markAttendance = async (imageSrc, location, userId, purpose, feedback, subPurpose) => {
     setIsLoading(true);
     setError(null);
     toast.loading('Submitting record...');
@@ -20,31 +20,35 @@ export const useAttendance = () => {
     formData.append('userId', userId);
     formData.append('purpose', purpose);
     formData.append('feedback', feedback);
+    if (subPurpose) {
+        formData.append('subPurpose', subPurpose); // Add sub-purpose if provided
+    }
 
     try {
-      const response = await fetch(`${apiUrl}/api/attendance`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData,
-      });
+        const response = await fetch(`${apiUrl}/api/attendance`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+            body: formData,
+        });
 
-      const json = await response.json();
+        const json = await response.json();
 
-      if (!response.ok) {
-        throw new Error(json.error);
-      }
-      toast.dismiss();
-      toast.success("You're in 👍");
+        if (!response.ok) {
+            throw new Error(json.error);
+        }
+        toast.dismiss();
+        toast.success("You're in 👍");
     } catch (err) {
-      setError(err.message);
-      toast.dismiss();
-      toast.error(`Error: ${err.message}`);
+        setError(err.message);
+        toast.dismiss();
+        toast.error(`Error: ${err.message}`);
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
-  };
+};
+
 
 
   const fetchAttendanceByDate = async (date) => {

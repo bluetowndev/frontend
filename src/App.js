@@ -10,6 +10,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Footer from "./components/Footer";
 import { Toaster } from 'react-hot-toast';
 import StateheadDashboard from "./pages/StateheadDashboard";
+import Dashboard from "./pages/Dahboard"; // Import the new Dashboard page
 
 function App() {
   const { user } = useAuthContext();
@@ -68,6 +69,10 @@ function App() {
                   <Navigate to="/" />
                 )
               }
+            />
+            <Route
+              path="/dashboard"
+              element={<Dashboard />} // Add the new route for Dashboard
             />
           </Routes>
         </div>

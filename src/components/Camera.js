@@ -2,19 +2,19 @@ import React, { useRef, useState, useEffect } from "react";
 import Webcam from "react-webcam";
 import { useAttendance } from "../hooks/useAttendance";
 import { useNavigate } from "react-router-dom";
-import { toast } from 'react-hot-toast';
+import { toast } from "react-hot-toast";
 
-const Camera = ({onClose}) => {
+const Camera = ({ onClose }) => {
   const webcamRef = useRef(null);
   const [imageSrc, setImageSrc] = useState(null);
   const [location, setLocation] = useState({ lat: null, lng: null });
-  const [feedback, setFeedback] = useState(""); 
-  const [selectedOption, setSelectedOption] = useState(""); // New state for dropdown
+  const [feedback, setFeedback] = useState("");
+  const [selectedOption, setSelectedOption] = useState(""); // Purpose of visit
+  const [selectedSubPurpose, setSelectedSubPurpose] = useState(""); // Sub-purpose of visit
   const { markAttendance, isLoading, error } = useAttendance();
   const navigate = useNavigate();
   const [isCameraOpen, setIsCameraOpen] = useState(true);
 
-  // List of options that require feedback
   const mandatoryFeedbackOptions = [
     "BSNL Office Visit",
     "New Site Survey",
@@ -49,24 +49,41 @@ const Camera = ({onClose}) => {
 
   const handleSubmit = async () => {
     try {
-      // Check if feedback is mandatory and empty
-      if (mandatoryFeedbackOptions.includes(selectedOption) && feedback.trim() === "") {
+      if (
+        mandatoryFeedbackOptions.includes(selectedOption) &&
+        feedback.trim() === ""
+      ) {
         toast.error("Details are required for the selected purpose of visit.");
         return;
       }
 
-      const userId = JSON.parse(localStorage.getItem("user"))._id;
-      await markAttendance(imageSrc, location, userId, selectedOption, feedback); // Include selectedOption
+      if (selectedOption === "Site Visit" && !selectedSubPurpose) {
+        toast.error("Please select a sub-purpose for Site Visit.");
+        return;
+      }
 
-      // Reset image source and turn off the camera
+      const userId = JSON.parse(localStorage.getItem("user"))._id;
+      await markAttendance(
+        imageSrc,
+        location,
+        userId,
+        selectedOption,
+        feedback,
+        selectedSubPurpose // Include sub-purpose
+      );
+
       setImageSrc(null);
-      setIsCameraOpen(false); // Close the camera/modal
-      if (webcamRef.current && webcamRef.current.video && webcamRef.current.video.srcObject) {
-        webcamRef.current.video.srcObject.getTracks().forEach((track) => track.stop());
+      setIsCameraOpen(false);
+      if (
+        webcamRef.current &&
+        webcamRef.current.video &&
+        webcamRef.current.video.srcObject
+      ) {
+        webcamRef.current.video.srcObject.getTracks().forEach((track) =>
+          track.stop()
+        );
       }
       onClose();
-
-      // Navigate to home page
       navigate("/");
     } catch (error) {
       console.error("Error submitting attendance:", error);
@@ -76,8 +93,14 @@ const Camera = ({onClose}) => {
 
   const handleClose = () => {
     setIsCameraOpen(false);
-    if (webcamRef.current && webcamRef.current.video && webcamRef.current.video.srcObject) {
-      webcamRef.current.video.srcObject.getTracks().forEach((track) => track.stop());
+    if (
+      webcamRef.current &&
+      webcamRef.current.video &&
+      webcamRef.current.video.srcObject
+    ) {
+      webcamRef.current.video.srcObject.getTracks().forEach((track) =>
+        track.stop()
+      );
     }
   };
 
@@ -110,37 +133,84 @@ const Camera = ({onClose}) => {
           <div className="ml-4">
             <h3>Captured Image:</h3>
             <img src={imageSrc} alt="Captured" className="mt-2 rounded-lg" />
-            
-            {/* Dropdown field */}
-            <label htmlFor="options" className="mt-4 block text-gray-700">Select the Purpose of Visit:</label>
+
+            {/* Dropdown for purpose of visit */}
+            <label
+              htmlFor="options"
+              className="mt-4 block text-gray-700"
+            >
+              Select the Purpose of Visit:
+            </label>
             <select
               id="options"
               value={selectedOption}
-              onChange={(e) => setSelectedOption(e.target.value)}
+              onChange={(e) => {
+                setSelectedOption(e.target.value);
+                setSelectedSubPurpose(""); // Reset sub-purpose when main purpose changes
+              }}
               className="mt-2 p-2 border border-gray-300 rounded-lg"
             >
-              <option value="" disabled>Select an option</option>
+              <option value="" disabled>
+                Select an option
+              </option>
               <option value="Check In">Check In</option>
               <option value="Site Visit">Existing Site Visit</option>
               <option value="BSNL Office Visit">BSNL Office Visit</option>
               <option value="BT Office Visit">BT Office Visit</option>
               <option value="New Site Survey">New Site Survey</option>
-              <option value="Official Tour - Out of Station">Official Tour - Out of Station</option>
-              <option value="New Business Generation - Client Meeting">New Business Generation - Client Meeting</option>
-              <option value="Existing Client Meeting">Existing Client Meeting</option>
-              <option value="Preventive Measures">Preventive Site Visit</option>
+              <option value="Official Tour - Out of Station">
+                Official Tour - Out of Station
+              </option>
+              <option value="New Business Generation - Client Meeting">
+                New Business Generation - Client Meeting
+              </option>
+              <option value="Existing Client Meeting">
+                Existing Client Meeting
+              </option>
+              <option value="Preventive Measures">
+                Preventive Site Visit
+              </option>
               <option value="On Leave">On Leave</option>
               <option value="Others">Others</option>
               <option value="Check Out">Check Out</option>
             </select>
 
+            {/* Sub-purpose for Existing Site Visit */}
+            {selectedOption === "Site Visit" && (
+              <>
+                <label
+                  htmlFor="sub-purpose"
+                  className="mt-4 block text-gray-700"
+                >
+                  Select Sub-Purpose:
+                </label>
+                <select
+                  id="sub-purpose"
+                  value={selectedSubPurpose}
+                  onChange={(e) => setSelectedSubPurpose(e.target.value)}
+                  className="mt-2 p-2 border border-gray-300 rounded-lg"
+                >
+                  <option value="" disabled>
+                    Select a sub-purpose
+                  </option>
+                  <option value="Near End">Near End</option>
+                  <option value="Far End">Far End</option>
+                </select>
+              </>
+            )}
+
             {/* Feedback text box */}
-            <label htmlFor="feedback" className="mt-4 block text-gray-700">Details (max 50 characters):</label>
+            <label
+              htmlFor="feedback"
+              className="mt-4 block text-gray-700"
+            >
+              Details (max 50 characters):
+            </label>
             <input
               type="text"
               id="feedback"
               value={feedback}
-              onChange={(e) => setFeedback(e.target.value.slice(0, 50))} // Limit to 50 characters
+              onChange={(e) => setFeedback(e.target.value.slice(0, 50))}
               className="mt-2 p-2 border border-gray-300 rounded-lg"
               placeholder="Enter Details"
             />
@@ -150,7 +220,7 @@ const Camera = ({onClose}) => {
               className={`bg-red-600 text-white p-2 ml-2 rounded-lg mt-4 ${
                 isLoading && "opacity-50 cursor-not-allowed"
               }`}
-              disabled={isLoading || !selectedOption} // Disable if no option selected
+              disabled={isLoading || !selectedOption}
             >
               {isLoading ? "Submitting..." : "Submit"}
             </button>

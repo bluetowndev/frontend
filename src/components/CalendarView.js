@@ -161,19 +161,14 @@ const CalendarView = () => {
                   <p>Latitude: {attendance.location.lat}</p>
                   <p>Longitude: {attendance.location.lng}</p>
                   <p>Location: {attendance.locationName || "Loading..."}</p>
-                  {index > 0 && (
-                    <>
-                      <p>
-                        <b>Transit Time:</b> {calculateCallTime(attendanceData)[index] || "N/A"}
-                      </p>
-                      <p>
-                        <b>Transit Distance:</b>{" "}
-                        {calculateDistances(attendanceData)[index]
-                          ? `${calculateDistances(attendanceData)[index]} km`
-                          : "N/A"}
-                      </p>
-                    </>
+
+                  {/* Sub-purpose for site visits */}
+                  {attendance.purpose === "Site Visit" && attendance.subPurpose && (
+                    <p className="text-sm text-gray-600">
+                      <b>Sub-Purpose:</b> {attendance.subPurpose}
+                    </p>
                   )}
+
                   <img
                     src={attendance.image}
                     alt="Attendance"
@@ -187,7 +182,7 @@ const CalendarView = () => {
                 </b>
                 <button
                   onClick={saveDataToDB}
-                  className="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600"
+                  className="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600 mt-4"
                 >
                   Verify record
                 </button>
@@ -198,6 +193,7 @@ const CalendarView = () => {
           )
         }
       />
+
     </>
   );
 };
