@@ -193,8 +193,8 @@ const Camera = ({ onClose }) => {
                   <option value="" disabled>
                     Select a sub-purpose
                   </option>
-                  <option value="Near End">Near End</option>
-                  <option value="Far End">Far End</option>
+                  <option value="Customer End (CE)">Customer End (CE)</option>
+                  <option value="Tower End (TE)">Tower End (TE)</option>
                 </select>
               </>
             )}
