@@ -8,7 +8,7 @@ import Signup from "./pages/Signup";
 import Navbar from "./components/Navbar";
 import AdminDashboard from "./pages/AdminDashboard";
 import Footer from "./components/Footer";
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from "react-hot-toast";
 import StateheadDashboard from "./pages/StateheadDashboard";
 import Dashboard from "./pages/Dahboard"; // Import the new Dashboard page
 
@@ -32,6 +32,8 @@ function App() {
                     <Navigate to="/admin-dashboard" />
                   ) : user.role === "statehead" ? (
                     <Navigate to="/statehead-dashboard" />
+                  ) : user.role === "dashboard" ? (
+                    <Navigate to="/dashboard" />
                   ) : (
                     <Home />
                   )
@@ -72,7 +74,13 @@ function App() {
             />
             <Route
               path="/dashboard"
-              element={<Dashboard />} // Add the new route for Dashboard
+              element={
+                user && user.role === "dashboard" ? (
+                  <Dashboard />
+                ) : (
+                  <Navigate to="/" />
+                )
+              }
             />
           </Routes>
         </div>
