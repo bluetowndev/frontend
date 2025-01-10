@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import AdminSidebar from "../components/admin/Sidebar_Admin";
 import AdminCards from "../components/admin/Cards_Admin";
 import WorldMapAdmin from "../components/admin/WorldMap_Admin";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import * as XLSX from 'xlsx';
-import { toast } from 'react-hot-toast';
+import * as XLSX from "xlsx";
+import { toast } from "react-hot-toast";
 
-const apiUrl = process.env.REACT_APP_API_URL || '';
+const apiUrl = process.env.REACT_APP_API_URL || "";
 
 const statesAndUTs = [
   "Bihar", "Himachal Pradesh", "Jharkhand", "Madhya Pradesh", "Rajasthan", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "all"
@@ -20,9 +21,10 @@ const AdminDashboard = () => {
   const [attendanceData, setAttendanceData] = useState([]);
   const [searchEmail, setSearchEmail] = useState("");
   const [userData, setUserData] = useState([]);
-  const [error, setError] = useState('');
-  //eslint-disable-next-line
+  const [error, setError] = useState("");
   const [fetchingData, setFetchingData] = useState(false);
+
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const handleStateChange = (e) => setSelectedState(e.target.value);
   const handleStartDateChange = (date) => setStartDate(date);
@@ -33,89 +35,97 @@ const AdminDashboard = () => {
     if (selectedState && startDate) {
       const startInIST = new Date(startDate);
       startInIST.setMinutes(startInIST.getMinutes() + 330); // Convert to IST
-  
+
       const endInIST = endDate ? new Date(endDate) : new Date(startInIST);
       endInIST.setMinutes(endInIST.getMinutes() + 330); // Convert to IST
-  
-      const user = JSON.parse(localStorage.getItem('user')); // Get user from local storage
+
+      const user = JSON.parse(localStorage.getItem("user")); // Get user from local storage
       const token = user ? user.token : null; // Extract token from user object
-  
+
       if (!token) {
-        toast.error('No token found');
+        toast.error("No token found");
         return;
       }
-  
+
       setFetchingData(true);
       try {
-        const stateQueryParam = selectedState === "all" ? "" : `state=${selectedState}&`;
-        const response = await fetch(`${apiUrl}/api/attendance/filtered?${stateQueryParam}startDate=${startInIST.toISOString().split('T')[0]}&endDate=${endInIST.toISOString().split('T')[0]}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
+        const stateQueryParam =
+          selectedState === "all" ? "" : `state=${selectedState}&`;
+        const response = await fetch(
+          `${apiUrl}/api/attendance/filtered?${stateQueryParam}startDate=${startInIST
+            .toISOString()
+            .split("T")[0]}&endDate=${endInIST.toISOString().split("T")[0]}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           }
-        });
-  
+        );
+
         const data = await response.json();
-  
+
         if (response.ok) {
           setAttendanceData(data);
-          toast.success('Attendance data fetched successfully');
+          toast.success("Attendance data fetched successfully");
         } else {
-          console.error('Failed to fetch attendance data:', data.error);
-          toast.error('Failed to fetch attendance data');
+          console.error("Failed to fetch attendance data:", data.error);
+          toast.error("Failed to fetch attendance data");
         }
       } catch (error) {
-        console.error('An error occurred:', error);
-        toast.error('An error occurred while fetching attendance data');
+        console.error("An error occurred:", error);
+        toast.error("An error occurred while fetching attendance data");
       } finally {
         setFetchingData(false);
       }
     }
   }, [selectedState, startDate, endDate]);
-  
 
   const fetchUserData = async () => {
     if (searchEmail) {
-      const user = JSON.parse(localStorage.getItem('user')); // Get user from local storage
+      const user = JSON.parse(localStorage.getItem("user")); // Get user from local storage
       const token = user ? user.token : null; // Extract token from user object
 
       if (!token) {
-        toast.error('No token found');
+        toast.error("No token found");
         return;
       }
 
       setFetchingData(true);
       try {
-        const response = await fetch(`${apiUrl}/api/attendance/user?email=${searchEmail}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
+        const response = await fetch(
+          `${apiUrl}/api/attendance/user?email=${searchEmail}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           }
-        });
+        );
 
         const data = await response.json();
 
         if (response.ok) {
           if (data.length === 0) {
-            setError('User does not exist');
+            setError("User does not exist");
             setUserData([]);
-            toast.error('User does not exist');
+            toast.error("User does not exist");
           } else {
-            setError('');
+            setError("");
             setUserData(data);
-            toast.success('User data fetched successfully');
+            toast.success("User data fetched successfully");
           }
         } else {
-          console.error('Failed to fetch user data:', data.error);
-          setError('An error occurred while fetching user data');
-          toast.error('Failed to fetch user data');
+          console.error("Failed to fetch user data:", data.error);
+          setError("An error occurred while fetching user data");
+          toast.error("Failed to fetch user data");
         }
       } catch (error) {
-        console.error('An error occurred:', error);
-        setError('An error occurred while fetching user data');
-        toast.error('An error occurred while fetching user data');
+        console.error("An error occurred:", error);
+        setError("An error occurred while fetching user data");
+        toast.error("An error occurred while fetching user data");
       } finally {
         setFetchingData(false);
       }
@@ -126,7 +136,7 @@ const AdminDashboard = () => {
     const date = new Date(dateString);
     const offset = 330; // IST offset in minutes
     date.setMinutes(date.getMinutes() + offset);
-    return date.toISOString().replace('T', ' ').substring(0, 19); // Format as YYYY-MM-DD HH:mm:ss
+    return date.toISOString().replace("T", " ").substring(0, 19); // Format as YYYY-MM-DD HH:mm:ss
   };
 
   const downloadExcel = (data, fileName) => {
@@ -134,14 +144,14 @@ const AdminDashboard = () => {
       toast.error("No data to download");
       return;
     }
-  
+
     // Process data to group by user and date
     const groupedData = {};
-  
+
     data.forEach((entry) => {
       const userId = entry.user.email;
       const date = convertToIST(entry.timestamp).split(" ")[0]; // Extract only the date
-  
+
       // Initialize group if not already present
       if (!groupedData[userId]) {
         groupedData[userId] = {};
@@ -152,19 +162,19 @@ const AdminDashboard = () => {
           entries: [],
         };
       }
-  
+
       // Add the entry to the respective group
       groupedData[userId][date].entries.push(entry);
       groupedData[userId][date].totalDistance += entry.totalDistance || 0; // Add the distance
     });
-  
+
     // Prepare rows for Excel with sequential headings
     const excelRows = [];
     Object.keys(groupedData).forEach((userId) => {
       Object.keys(groupedData[userId]).forEach((date) => {
         const group = groupedData[userId][date];
         const entries = group.entries;
-  
+
         const baseRow = {
           Email: entries[0].user.email,
           Name: entries[0].user.fullName,
@@ -172,35 +182,38 @@ const AdminDashboard = () => {
           "Mobile Number": entries[0].user.phoneNumber,
           Date: date,
           "Reporting Manager": entries[0].user.reportingManager,
-          // "Total Distance (km)": group.totalDistance.toFixed(2), // Add total distance
         };
-  
+
         // Add entries as columns dynamically
         entries.forEach((entry, index) => {
           const entryNumber = index + 1;
-          baseRow[`Entry ${entryNumber} - Login Time`] = convertToIST(entry.timestamp);
-          baseRow[`Entry ${entryNumber} - Location Latitude`] = entry.location.lat;
-          baseRow[`Entry ${entryNumber} - Location Longitude`] = entry.location.lng;
-          baseRow[`Entry ${entryNumber} - Location Name`] = entry.locationName;
+          baseRow[`Entry ${entryNumber} - Login Time`] = convertToIST(
+            entry.timestamp
+          );
+          baseRow[`Entry ${entryNumber} - Location Latitude`] =
+            entry.location.lat;
+          baseRow[`Entry ${entryNumber} - Location Longitude`] =
+            entry.location.lng;
+          baseRow[`Entry ${entryNumber} - Location Name`] =
+            entry.locationName;
           baseRow[`Entry ${entryNumber} - Purpose`] = entry.purpose;
           baseRow[`Entry ${entryNumber} - Feedback`] = entry.feedback;
         });
-  
+
         excelRows.push(baseRow);
       });
     });
-  
+
     // Convert to Excel and download
     const ws = XLSX.utils.json_to_sheet(excelRows);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Attendance Data');
-  
+    XLSX.utils.book_append_sheet(wb, ws, "Attendance Data");
+
     // Download the file
     XLSX.writeFile(wb, `${fileName}.xlsx`);
     toast.success(`${fileName} downloaded successfully`);
   };
-  
-  
+
   useEffect(() => {
     if (selectedState && startDate) {
       fetchAttendanceData();
@@ -209,13 +222,21 @@ const AdminDashboard = () => {
 
   return (
     <div className="md:flex ">
-      <AdminSidebar  />
+      <AdminSidebar />
       <div className="flex flex-col flex-grow p-4">
         <div className="mb-5 w-full">
           <AdminCards />
         </div>
         <div className="flex flex-col md:flex-row md:mx-5 space-y-5 md:space-y-0 md:space-x-5 flex-grow">
           <div className="md:w-1/3 lg:w-2/3 w-full mb-2 space-y-4">
+            <div className="flex justify-end">
+              <button
+                onClick={() => navigate("/dashboard")}
+                className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition duration-300"
+              >
+                New Dashboard
+              </button>
+            </div>
             <div className="flex flex-col space-y-4">
               <select
                 value={selectedState}
@@ -223,8 +244,10 @@ const AdminDashboard = () => {
                 className="p-2 border rounded"
               >
                 <option value="">Select State/UT</option>
-                {statesAndUTs.map(state => (
-                  <option key={state} value={state}>{state}</option>
+                {statesAndUTs.map((state) => (
+                  <option key={state} value={state}>
+                    {state}
+                  </option>
                 ))}
               </select>
               <div className="flex flex-col space-y-2">
@@ -244,7 +267,7 @@ const AdminDashboard = () => {
                 />
               </div>
               <button
-                onClick={() => downloadExcel(attendanceData, 'attendance_data')}
+                onClick={() => downloadExcel(attendanceData, "attendance_data")}
                 className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition duration-300 w-full"
               >
                 Download State Data
@@ -260,21 +283,25 @@ const AdminDashboard = () => {
               />
               <button
                 onClick={fetchUserData}
-                className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700 transition duration-300 w-full"
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition duration-300 w-full"
               >
-                Search User Data
+                Fetch User Data
               </button>
-              {error && <div className="text-red-600">{error}</div>}
-              <button
-                onClick={() => downloadExcel(userData, 'user_data')}
-                className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition duration-300 w-full"
-              >
-                Download User Data
-              </button>
+              {userData.length > 0 && (
+                <button
+                  onClick={() => downloadExcel(userData, "user_data")}
+                  className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition duration-300 w-full"
+                >
+                  Download User Data
+                </button>
+              )}
+              {error && (
+                <p className="text-red-500 text-center">{error}</p>
+              )}
             </div>
           </div>
           <div className="md:w-2/3 lg:w-1/3 w-full">
-            <WorldMapAdmin />
+            <WorldMapAdmin attendanceData={attendanceData} />
           </div>
         </div>
       </div>
@@ -283,3 +310,4 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+
