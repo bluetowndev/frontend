@@ -11,8 +11,8 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
 
   const cards = [
-    { id: "noCheckin", text: "Not Checked In", color: "bg-red-500", icon: "🚫", api: `${apiUrl}/api/attendance/no-checkin` },
-    { id: "noCheckout", text: "Not Checked Out", color: "bg-yellow-500", icon: "⏳", api: `${apiUrl}/api/attendance/no-checkout` },
+    { id: "noCheckin", text: "Not Punched In", color: "bg-red-500", icon: "🚫", api: `${apiUrl}/api/attendance/no-checkin` },
+    { id: "noCheckout", text: "Not Punched Out", color: "bg-yellow-500", icon: "⏳", api: `${apiUrl}/api/attendance/no-checkout` },
     { id: "onLeave", text: "On Leave", color: "bg-blue-500", icon: "🌴", api: `${apiUrl}/api/attendance/onLeave` },
     { id: "absent", text: "Absent", color: "bg-gray-500", icon: "❌", api: `${apiUrl}/api/attendance/absent` },
     { id: "siteVisits", text: "Site Visits", color: "bg-green-500", icon: "📍", api: `${apiUrl}/api/attendance/siteCount` },

@@ -153,7 +153,7 @@ const Camera = ({ onClose }) => {
               <option value="" disabled>
                 Select an option
               </option>
-              <option value="Punch In">Punch In</option>
+              <option value="Check In">Check In</option>
               <option value="Site Visit">Existing Site Visit</option>
               <option value="BSNL Office Visit">BSNL Office Visit</option>
               <option value="BT Office Visit">BT Office Visit</option>
@@ -172,7 +172,7 @@ const Camera = ({ onClose }) => {
               </option>
               <option value="On Leave">On Leave</option>
               <option value="Others">Others</option>
-              <option value="Punch Out">Punch Out</option>
+              <option value="Check Out">Check Out</option>
             </select>
 
             {/* Sub-purpose for Existing Site Visit */}
