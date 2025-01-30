@@ -150,10 +150,12 @@ const Home = () => {
               <div className="mb-3 md:mb-[50px]">
                 <HorizentalGraph
                   startDate="2025-01-01"
-                  endDate="2025-01-30"
+                  endDate="2025-01-31"
                   holidayArray={[
+                    "2025-01-01",
                     "2025-01-05",
                     "2025-01-12",
+                    "2025-01-14",
                     "2025-01-19",
                     "2025-01-26",
                   ]}
