@@ -9,11 +9,16 @@ const Camera = ({ onClose }) => {
   const [imageSrc, setImageSrc] = useState(null);
   const [location, setLocation] = useState({ lat: null, lng: null });
   const [feedback, setFeedback] = useState("");
-  const [selectedOption, setSelectedOption] = useState(""); // Purpose of visit
-  const [selectedSubPurpose, setSelectedSubPurpose] = useState(""); // Sub-purpose of visit
+  const [selectedOption, setSelectedOption] = useState("");
+  const [selectedSubPurpose, setSelectedSubPurpose] = useState("");
   const { markAttendance, isLoading, error } = useAttendance();
   const navigate = useNavigate();
   const [isCameraOpen, setIsCameraOpen] = useState(true);
+  const [isFirstEntry, setIsFirstEntry] = useState(true); // State to track the first entry of the day
+
+  const apiUrl = process.env.REACT_APP_API_URL || '';
+
+  const token = JSON.parse(localStorage.getItem('user')).token;
 
   const mandatoryFeedbackOptions = [
     "BSNL Office Visit",
@@ -22,7 +27,55 @@ const Camera = ({ onClose }) => {
     "New Business Generation - Client Meeting",
   ];
 
+  const purposes = [
+    "Punch In",
+    "Site Visit",
+    "BSNL Office Visit",
+    "BT Office Visit",
+    "New Site Survey",
+    "Official Tour - Out of Station",
+    "New Business Generation - Client Meeting",
+    "Existing Client Meeting",
+    "Preventive Measures",
+    "On Leave",
+    "Others",
+    "Punch Out",
+  ];
+
+  const getPurposes = () => {
+    if (isFirstEntry) {
+      return ["Punch In", "On Leave"];
+    }
+    return purposes.filter((purpose) => purpose !== "Punch In" && purpose !== "On Leave");
+  };
+
   useEffect(() => {
+    // Check if it's the user's first entry of the day
+    const checkFirstEntry = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/api/attendance/first-entry`, {
+          method: "GET",
+          headers: {
+            'Authorization': `Bearer ${token}`, // Include token for authentication
+          },
+        });
+    
+        const data = await response.json();
+    
+        if (response.ok) {
+          setIsFirstEntry(data.isFirstEntry); // Use the `isFirstEntry` flag from the backend response
+        } else {
+          toast.error(data.error || "Failed to check entry status.");
+        }
+      } catch (error) {
+        console.error("Error checking first entry:", error);
+        toast.error("Unable to determine entry status.");
+      }
+    };
+    
+
+    checkFirstEntry();
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -69,7 +122,7 @@ const Camera = ({ onClose }) => {
         userId,
         selectedOption,
         feedback,
-        selectedSubPurpose // Include sub-purpose
+        selectedSubPurpose
       );
 
       setImageSrc(null);
@@ -135,10 +188,7 @@ const Camera = ({ onClose }) => {
             <img src={imageSrc} alt="Captured" className="mt-2 rounded-lg" />
 
             {/* Dropdown for purpose of visit */}
-            <label
-              htmlFor="options"
-              className="mt-4 block text-gray-700"
-            >
+            <label htmlFor="options" className="mt-4 block text-gray-700">
               Select the Purpose of Visit:
             </label>
             <select
@@ -146,33 +196,18 @@ const Camera = ({ onClose }) => {
               value={selectedOption}
               onChange={(e) => {
                 setSelectedOption(e.target.value);
-                setSelectedSubPurpose(""); // Reset sub-purpose when main purpose changes
+                setSelectedSubPurpose("");
               }}
               className="mt-2 p-2 border border-gray-300 rounded-lg"
             >
               <option value="" disabled>
                 Select an option
               </option>
-              <option value="Check In">Check In</option>
-              <option value="Site Visit">Existing Site Visit</option>
-              <option value="BSNL Office Visit">BSNL Office Visit</option>
-              <option value="BT Office Visit">BT Office Visit</option>
-              <option value="New Site Survey">New Site Survey</option>
-              <option value="Official Tour - Out of Station">
-                Official Tour - Out of Station
-              </option>
-              <option value="New Business Generation - Client Meeting">
-                New Business Generation - Client Meeting
-              </option>
-              <option value="Existing Client Meeting">
-                Existing Client Meeting
-              </option>
-              <option value="Preventive Measures">
-                Preventive Site Visit
-              </option>
-              <option value="On Leave">On Leave</option>
-              <option value="Others">Others</option>
-              <option value="Check Out">Check Out</option>
+              {getPurposes().map((purpose) => (
+                <option key={purpose} value={purpose}>
+                  {purpose}
+                </option>
+              ))}
             </select>
 
             {/* Sub-purpose for Existing Site Visit */}
@@ -200,10 +235,7 @@ const Camera = ({ onClose }) => {
             )}
 
             {/* Feedback text box */}
-            <label
-              htmlFor="feedback"
-              className="mt-4 block text-gray-700"
-            >
+            <label htmlFor="feedback" className="mt-4 block text-gray-700">
               Details (max 50 characters):
             </label>
             <input
