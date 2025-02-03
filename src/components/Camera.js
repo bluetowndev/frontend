@@ -28,7 +28,7 @@ const Camera = ({ onClose }) => {
   ];
 
   const purposes = [
-    "Punch In",
+    "Check In",
     "Site Visit",
     "BSNL Office Visit",
     "BT Office Visit",
@@ -39,14 +39,14 @@ const Camera = ({ onClose }) => {
     "Preventive Measures",
     "On Leave",
     "Others",
-    "Punch Out",
+    "Check Out",
   ];
 
   const getPurposes = () => {
     if (isFirstEntry) {
-      return ["Punch In", "On Leave"];
+      return ["Check In", "On Leave"];
     }
-    return purposes.filter((purpose) => purpose !== "Punch In" && purpose !== "On Leave");
+    return purposes.filter((purpose) => purpose !== "Check In" && purpose !== "On Leave");
   };
 
   useEffect(() => {
