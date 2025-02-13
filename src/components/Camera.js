@@ -246,7 +246,7 @@ const Camera = ({ onClose }) => {
               type="text"
               id="feedback"
               value={feedback}
-              onChange={(e) => setFeedback(e.target.value.slice(0, 50))}
+              onChange={(e) => setFeedback(e.target.value.slice(0, 200))}
               className="mt-2 p-2 border border-gray-300 rounded-lg"
               placeholder="Enter Details"
             />

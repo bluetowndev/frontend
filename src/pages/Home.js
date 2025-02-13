@@ -19,7 +19,7 @@ const Home = () => {
     // Refresh the page every 60 seconds
     const interval = setInterval(() => {
       window.location.reload();  // This will reload the page
-    }, 60000);  // 60,000 milliseconds = 1 minute
+    }, 60000*4);  // 60,000 milliseconds = 1 minute
 
     return () => clearInterval(interval);  // Cleanup interval on component unmount
   }, []);
