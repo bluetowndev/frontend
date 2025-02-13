@@ -19,6 +19,7 @@ const Camera = ({ onClose }) => {
   const apiUrl = process.env.REACT_APP_API_URL || '';
 
   const token = JSON.parse(localStorage.getItem('user')).token;
+  const userState = JSON.parse(localStorage.getItem('user')).state; // Get the user's state
 
   const mandatoryFeedbackOptions = [
     "BSNL Office Visit",
@@ -43,6 +44,9 @@ const Camera = ({ onClose }) => {
   ];
 
   const getPurposes = () => {
+    if (userState === "Delhi") {
+      return ["Work from Home", "Week Off"];
+    }
     if (isFirstEntry) {
       return ["Check In", "On Leave"];
     }

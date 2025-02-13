@@ -11,7 +11,7 @@ import { toast } from "react-hot-toast";
 const apiUrl = process.env.REACT_APP_API_URL || "";
 
 const statesAndUTs = [
-  "Bihar", "Himachal Pradesh", "Jharkhand", "Madhya Pradesh", "Rajasthan", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "all"
+  "Bihar", "Delhi", "Himachal Pradesh", "Jharkhand", "Madhya Pradesh", "Rajasthan", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "all"
 ];
 
 const AdminDashboard = () => {
