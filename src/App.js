@@ -1,20 +1,10 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useAuthContext } from "./hooks/useAuthContext";
-
-// pages & components
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import AdminDashboard from "./pages/AdminDashboard";
 import Footer from "./components/Footer";
 import { Toaster } from "react-hot-toast";
-import StateheadDashboard from "./pages/StateheadDashboard";
-import Dashboard from "./pages/Dahboard"; // Import the new Dashboard page
+import Error from "./pages/Error"; // Import the ServerErrorPage component
 
 function App() {
-  const { user } = useAuthContext();
-
   return (
     <div className="flex flex-col min-h-screen">
       <BrowserRouter>
@@ -24,6 +14,11 @@ function App() {
         {/* Main content area */}
         <div className="flex-grow">
           <Routes>
+            {/* Display the ServerErrorPage on the "/" route */}
+            <Route path="/" element={<Error />} />
+
+            {/* Commented out existing routes */}
+            {/*
             <Route
               path="/"
               element={
@@ -82,6 +77,7 @@ function App() {
                 )
               }
             />
+            */}
           </Routes>
         </div>
 
