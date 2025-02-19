@@ -138,7 +138,7 @@ const Home = () => {
 
   return (
     <div className="home mx-auto mt-10 bg-white rounded-lg">
-      <div className="md:flex">
+      {/* <div className="md:flex">
         <Sidebar />
         <div className="md:mx-5 mx-1 w-full">
           <div className="md:flex flex-wrap">
@@ -166,7 +166,10 @@ const Home = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
+      <h1 className="text-2xl font-bold text-center text-gray-800 mt-5">
+        Site under maintanance
+        </h1>
     </div>
   );
 };
