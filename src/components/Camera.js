@@ -44,9 +44,9 @@ const Camera = ({ onClose }) => {
   ];
 
   const getPurposes = () => {
-    if (userState === "Delhi") {
-      return ["Work from Home", "Week Off"];
-    }
+    // if (userState === "Delhi") {
+    //   return ["Work from Home", "Week Off"];
+    // }
     if (isFirstEntry) {
       return ["Check In", "On Leave"];
     }
