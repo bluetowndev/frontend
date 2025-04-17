@@ -25,7 +25,7 @@ const Camera = ({ onClose }) => {
     "BSNL Office Visit",
     "New Site Survey",
     "Official Tour - Out of Station",
-    "New Business Generation - Client Meeting",
+    "NEW BUSINESS OPPORTUNITY - FIRST MEETING",
   ];
 
   const purposes = [
@@ -35,7 +35,8 @@ const Camera = ({ onClose }) => {
     "BT Office Visit",
     "New Site Survey",
     "Official Tour - Out of Station",
-    "New Business Generation - Client Meeting",
+    "NEW BUSINESS OPPORTUNITY - FIRST MEETING",
+    "BUSINESS DEVELOPMENT- FOLLOW UP MEETING",
     "Existing Client Meeting",
     "Preventive Measures",
     "On Leave",
@@ -63,9 +64,9 @@ const Camera = ({ onClose }) => {
             'Authorization': `Bearer ${token}`, // Include token for authentication
           },
         });
-    
+
         const data = await response.json();
-    
+
         if (response.ok) {
           setIsFirstEntry(data.isFirstEntry); // Use the `isFirstEntry` flag from the backend response
         } else {
@@ -76,7 +77,7 @@ const Camera = ({ onClose }) => {
         toast.error("Unable to determine entry status.");
       }
     };
-    
+
 
     checkFirstEntry();
 
@@ -208,7 +209,16 @@ const Camera = ({ onClose }) => {
                 Select an option
               </option>
               {getPurposes().map((purpose) => (
-                <option key={purpose} value={purpose}>
+                <option
+                  key={purpose}
+                  value={purpose}
+                  style={
+                    purpose === "NEW BUSINESS OPPORTUNITY - FIRST MEETING" ||
+                      purpose === "BUSINESS DEVELOPMENT- FOLLOW UP MEETING"
+                      ? { fontWeight: "bold" }
+                      : {}
+                  }
+                >
                   {purpose}
                 </option>
               ))}
@@ -253,9 +263,8 @@ const Camera = ({ onClose }) => {
 
             <button
               onClick={handleSubmit}
-              className={`bg-red-600 text-white p-2 ml-2 rounded-lg mt-4 ${
-                isLoading && "opacity-50 cursor-not-allowed"
-              }`}
+              className={`bg-red-600 text-white p-2 ml-2 rounded-lg mt-4 ${isLoading && "opacity-50 cursor-not-allowed"
+                }`}
               disabled={isLoading || !selectedOption}
             >
               {isLoading ? "Submitting..." : "Submit"}
