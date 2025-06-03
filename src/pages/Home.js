@@ -149,13 +149,15 @@ const Home = () => {
             <div className="md:w-1/2 w-full">
               <div className="mb-3 md:mb-[50px]">
                 <HorizentalGraph
-                  startDate="2025-05-01"
-                  endDate="2025-05-31"
+                  startDate="2025-06-01"
+                  endDate="2025-06-30"
                   holidayArray={[
-                    "2025-05-04",
-                    "2025-05-11",
-                    "2025-05-18",
-                    "2025-05-25",
+                    "2025-06-01",
+                    "2025-06-07",
+                    "2025-06-08",
+                    "2025-06-15",
+                    "2025-06-22",
+                    "2025-06-29"
                   ]}
                 />
               </div>
