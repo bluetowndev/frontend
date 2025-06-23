@@ -11,6 +11,9 @@ const Camera = ({ onClose }) => {
   const [feedback, setFeedback] = useState("");
   const [selectedOption, setSelectedOption] = useState("");
   const [selectedSubPurpose, setSelectedSubPurpose] = useState("");
+  const [previousSiteVisit, setPreviousSiteVisit] = useState(null);
+  const [selectedIssue, setSelectedIssue] = useState("");
+  const [summarySubmitted, setSummarySubmitted] = useState(false);
   const { markAttendance, isLoading, error } = useAttendance();
   const navigate = useNavigate();
   const [isCameraOpen, setIsCameraOpen] = useState(true);
@@ -42,6 +45,33 @@ const Camera = ({ onClose }) => {
     "On Leave",
     "Others",
     "Check Out",
+  ];
+
+  const towerEndIssues = [
+    "Router Faulty",
+    "Radio Faulty",
+    "Media Issue",
+    "BSNL Power Issue",
+    "Adapter Faulty",
+    "CAT6 Cable Faulty",
+    "Others"
+  ];
+
+  const customerEndIssues = [
+    "Router Faulty",
+    "Radio Faulty",
+    "Desktop Switch Faulty",
+    "POE Switch Faulty",
+    "AP Faulty",
+    "Media Issue",
+    "BT Fiber Cut",
+    "Adapter Faulty",
+    "CAT6 Cable Faulty",
+    "Preventive Maintenance",
+    "Customer Complaint",
+    "MSO- OFC Cut(Media Issue)",
+    "MSO ONU Faulty(Media Issue)",
+    "Others"
   ];
 
   const getPurposes = () => {
@@ -78,8 +108,23 @@ const Camera = ({ onClose }) => {
       }
     };
 
-
     checkFirstEntry();
+
+    const checkPreviousSiteVisit = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/api/attendance/last-site-visit`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        setPreviousSiteVisit(data);
+      } catch (error) {
+        console.error('Error checking previous site visit:', error);
+      }
+    };
+
+    checkPreviousSiteVisit();
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -105,12 +150,49 @@ const Camera = ({ onClose }) => {
     }
   };
 
+  const saveSiteVisitSummary = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/api/attendance/site-visit-summary`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          attendanceId: previousSiteVisit.attendanceId,
+          issue: selectedIssue
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save site visit summary');
+      }
+
+      // Update the previousSiteVisit state to include summarySubmitted
+      setPreviousSiteVisit(prev => ({
+        ...prev,
+        summarySubmitted: true
+      }));
+      
+      toast.success('Site visit summary saved successfully');
+    } catch (error) {
+      console.error('Error saving site visit summary:', error);
+      toast.error('Failed to save site visit summary');
+    }
+  };
+
+  const handleSubmitSummary = async (e) => {
+    e.preventDefault();
+    if (!selectedIssue) {
+      toast.error("Please select the last visit purpose");
+      return;
+    }
+    await saveSiteVisitSummary();
+  };
+
   const handleSubmit = async () => {
     try {
-      if (
-        mandatoryFeedbackOptions.includes(selectedOption) &&
-        feedback.trim() === ""
-      ) {
+      if (mandatoryFeedbackOptions.includes(selectedOption) && feedback.trim() === "") {
         toast.error("Details are required for the selected purpose of visit.");
         return;
       }
@@ -121,6 +203,7 @@ const Camera = ({ onClose }) => {
       }
 
       const userId = JSON.parse(localStorage.getItem("user"))._id;
+
       await markAttendance(
         imageSrc,
         location,
@@ -132,14 +215,8 @@ const Camera = ({ onClose }) => {
 
       setImageSrc(null);
       setIsCameraOpen(false);
-      if (
-        webcamRef.current &&
-        webcamRef.current.video &&
-        webcamRef.current.video.srcObject
-      ) {
-        webcamRef.current.video.srcObject.getTracks().forEach((track) =>
-          track.stop()
-        );
+      if (webcamRef.current && webcamRef.current.video && webcamRef.current.video.srcObject) {
+        webcamRef.current.video.srcObject.getTracks().forEach((track) => track.stop());
       }
       onClose();
       navigate("/");
@@ -162,6 +239,60 @@ const Camera = ({ onClose }) => {
     }
   };
 
+  // Show summary form if there's a previous site visit and summary hasn't been submitted
+  if (previousSiteVisit?.hasPreviousSiteVisit && !previousSiteVisit.summarySubmitted) {
+    return (
+      <div className="flex flex-col items-start bg-gray-200 p-6 rounded-lg relative w-full max-w-md mx-auto">
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 text-gray-700 hover:text-gray-900"
+        >
+          &times;
+        </button>
+        
+        <div className="w-full p-4 bg-white rounded-lg shadow">
+          <h3 className="text-lg font-semibold mb-4">Previous Site Visit Summary Required</h3>
+          <p className="mb-4">Please provide details about your previous {previousSiteVisit.visitType} visit before proceeding.</p>
+          
+          <form onSubmit={handleSubmitSummary} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select last visit purpose:
+              </label>
+              <select
+                value={selectedIssue}
+                onChange={(e) => setSelectedIssue(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-lg"
+                required
+              >
+                <option value="">Select last visit purpose</option>
+                {previousSiteVisit.visitType === "Tower End (TE)"
+                  ? towerEndIssues.map((issue) => (
+                      <option key={issue} value={issue}>
+                        {issue}
+                      </option>
+                    ))
+                  : customerEndIssues.map((issue) => (
+                      <option key={issue} value={issue}>
+                        {issue}
+                      </option>
+                    ))}
+              </select>
+            </div>
+            
+            <button
+              type="submit"
+              className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700"
+            >
+              Submit Summary
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // Show camera and main form only after summary is submitted or if no previous site visit
   return (
     isCameraOpen && (
       <div className="flex flex-col items-start bg-gray-200 p-4 rounded-lg relative">
@@ -171,6 +302,7 @@ const Camera = ({ onClose }) => {
         >
           &times;
         </button>
+
         {!imageSrc && (
           <div className="flex flex-col items-center">
             <Webcam
