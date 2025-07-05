@@ -37,7 +37,16 @@ const Dashboard = () => {
     }
 
     try {
-      const response = await fetch(card.api, {
+      // Get current date in YYYY-MM-DD format
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Add query parameters for endpoints that need dates
+      let apiUrl = card.api;
+      if (card.id === "noCheckout" || card.id === "absent") {
+        apiUrl = `${apiUrl}?startDate=${today}&endDate=${today}`;
+      }
+
+      const response = await fetch(apiUrl, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -50,15 +59,32 @@ const Dashboard = () => {
       }
 
       const responseData = await response.json();
-      const transformedData = responseData?.data?.map((user, index) => ({
-        serial: index + 1,
-        fullName: user.fullName || "N/A",
-        email: user.email || "N/A",
-        visitCount: user.visitCount || 0,
-        phoneNumber: user.phoneNumber || "N/A",
-        state: user.state || "N/A",
-        reportingManager: user.reportingManager || "N/A",
-      })) || [];
+      let transformedData;
+
+      if (card.id === "noCheckout" || card.id === "absent") {
+        // Handle date-wise data structure
+        transformedData = Object.entries(responseData.data[today] || {}).map(([_, user], index) => ({
+          serial: index + 1,
+          fullName: user.fullName || "N/A",
+          email: user.email || "N/A",
+          visitCount: user.visitCount || 0,
+          phoneNumber: user.phoneNumber || "N/A",
+          state: user.state || "N/A",
+          reportingManager: user.reportingManager || "N/A",
+        }));
+      } else {
+        // Handle regular data structure
+        transformedData = (responseData?.data || []).map((user, index) => ({
+          serial: index + 1,
+          fullName: user.fullName || "N/A",
+          email: user.email || "N/A",
+          visitCount: user.visitCount || 0,
+          phoneNumber: user.phoneNumber || "N/A",
+          state: user.state || "N/A",
+          reportingManager: user.reportingManager || "N/A",
+        }));
+      }
+      
       setData(transformedData);
     } catch (err) {
       console.error("API Error:", err);
