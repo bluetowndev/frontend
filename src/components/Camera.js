@@ -126,28 +126,22 @@ const Camera = ({ onClose }) => {
 
     checkPreviousSiteVisit();
 
+    // Get user's current location
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          });
-        },
-        (error) => {
-          console.error("Error fetching location:", error);
-        }
-      );
+      navigator.geolocation.getCurrentPosition((position) => {
+        setLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+      });
     } else {
-      console.error("Geolocation is not supported by this browser.");
+      toast.error("Geolocation is not supported by this browser.");
     }
   }, []);
 
   const captureImage = () => {
-    if (webcamRef.current) {
-      const imageSrc = webcamRef.current.getScreenshot();
-      setImageSrc(imageSrc);
-    }
+    const imageSrc = webcamRef.current.getScreenshot();
+    setImageSrc(imageSrc);
   };
 
   const saveSiteVisitSummary = async () => {
@@ -164,36 +158,34 @@ const Camera = ({ onClose }) => {
         })
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to save site visit summary');
+      if (response.ok) {
+        setSummarySubmitted(true);
+        toast.success('Site visit summary submitted successfully');
+        setPreviousSiteVisit(prev => ({ ...prev, summarySubmitted: true }));
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || 'Failed to submit summary');
       }
-
-      // Update the previousSiteVisit state to include summarySubmitted
-      setPreviousSiteVisit(prev => ({
-        ...prev,
-        summarySubmitted: true
-      }));
-      
-      toast.success('Site visit summary saved successfully');
     } catch (error) {
-      console.error('Error saving site visit summary:', error);
-      toast.error('Failed to save site visit summary');
+      console.error('Error submitting summary:', error);
+      toast.error('Error submitting summary');
     }
   };
 
   const handleSubmitSummary = async (e) => {
     e.preventDefault();
-    if (!selectedIssue) {
-      toast.error("Please select the last visit purpose");
-      return;
-    }
     await saveSiteVisitSummary();
   };
 
   const handleSubmit = async () => {
     try {
-      if (mandatoryFeedbackOptions.includes(selectedOption) && feedback.trim() === "") {
-        toast.error("Details are required for the selected purpose of visit.");
+      if (!location.lat || !location.lng) {
+        toast.error("Please allow location access to mark attendance.");
+        return;
+      }
+
+      if (!selectedOption) {
+        toast.error("Please select a purpose for your visit.");
         return;
       }
 
@@ -237,56 +229,64 @@ const Camera = ({ onClose }) => {
         track.stop()
       );
     }
+    onClose();
   };
 
   // Show summary form if there's a previous site visit and summary hasn't been submitted
   if (previousSiteVisit?.hasPreviousSiteVisit && !previousSiteVisit.summarySubmitted) {
     return (
-      <div className="flex flex-col items-start bg-gray-200 p-6 rounded-lg relative w-full max-w-md mx-auto">
-        <button
-          onClick={onClose}
-          className="absolute top-2 right-2 text-gray-700 hover:text-gray-900"
-        >
-          &times;
-        </button>
-        
-        <div className="w-full p-4 bg-white rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">Previous Site Visit Summary Required</h3>
-          <p className="mb-4">Please provide details about your previous {previousSiteVisit.visitType} visit before proceeding.</p>
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full relative transform transition-all">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 w-8 h-8 bg-red-100 hover:bg-red-200 rounded-full flex items-center justify-center text-red-600 transition-colors"
+          >
+            ×
+          </button>
           
-          <form onSubmit={handleSubmitSummary} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select last visit purpose:
-              </label>
-              <select
-                value={selectedIssue}
-                onChange={(e) => setSelectedIssue(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg"
-                required
-              >
-                <option value="">Select last visit purpose</option>
-                {previousSiteVisit.visitType === "Tower End (TE)"
-                  ? towerEndIssues.map((issue) => (
-                      <option key={issue} value={issue}>
-                        {issue}
-                      </option>
-                    ))
-                  : customerEndIssues.map((issue) => (
-                      <option key={issue} value={issue}>
-                        {issue}
-                      </option>
-                    ))}
-              </select>
+          <div className="p-8">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">📝</span>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">Site Visit Summary Required</h3>
+              <p className="text-gray-600">Please provide details about your previous {previousSiteVisit.visitType} visit before proceeding.</p>
             </div>
             
-            <button
-              type="submit"
-              className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700"
-            >
-              Submit Summary
-            </button>
-          </form>
+            <form onSubmit={handleSubmitSummary} className="space-y-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  Select last visit purpose:
+                </label>
+                <select
+                  value={selectedIssue}
+                  onChange={(e) => setSelectedIssue(e.target.value)}
+                  className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  required
+                >
+                  <option value="">Select last visit purpose</option>
+                  {previousSiteVisit.visitType === "Tower End (TE)"
+                    ? towerEndIssues.map((issue) => (
+                        <option key={issue} value={issue}>
+                          {issue}
+                        </option>
+                      ))
+                    : customerEndIssues.map((issue) => (
+                        <option key={issue} value={issue}>
+                          {issue}
+                        </option>
+                      ))}
+                </select>
+              </div>
+              
+              <button
+                type="submit"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-4 px-6 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
+              >
+                Submit Summary
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     );
@@ -295,119 +295,179 @@ const Camera = ({ onClose }) => {
   // Show camera and main form only after summary is submitted or if no previous site visit
   return (
     isCameraOpen && (
-      <div className="flex flex-col items-start bg-gray-200 p-4 rounded-lg relative">
-        <button
-          onClick={handleClose}
-          className="absolute top-2 right-2 text-gray-700 hover:text-gray-900"
-        >
-          &times;
-        </button>
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
+          <button
+            onClick={handleClose}
+            className="absolute top-4 right-4 w-10 h-10 bg-red-100 hover:bg-red-200 rounded-full flex items-center justify-center text-red-600 transition-colors z-10"
+          >
+            ×
+          </button>
 
-        {!imageSrc && (
-          <div className="flex flex-col items-center">
-            <Webcam
-              audio={false}
-              ref={webcamRef}
-              screenshotFormat="image/jpeg"
-              className="mb-4"
-            />
-            <button
-              onClick={captureImage}
-              className="bg-indigo-600 text-white p-2 rounded-lg"
-            >
-              Click
-            </button>
-          </div>
-        )}
-        {imageSrc && (
-          <div className="ml-4">
-            <h3>Captured Image:</h3>
-            <img src={imageSrc} alt="Captured" className="mt-2 rounded-lg" />
+          <div className="p-8">
+            {!imageSrc ? (
+              // Camera View
+              <div className="text-center">
+                <div className="mb-6">
+                  <h2 className="text-3xl font-bold text-gray-800 mb-2">Mark Attendance</h2>
+                  <p className="text-gray-600">Position yourself in the frame and click capture</p>
+                </div>
+                
+                <div className="relative inline-block rounded-2xl overflow-hidden shadow-2xl mb-6">
+                  <Webcam
+                    audio={false}
+                    ref={webcamRef}
+                    screenshotFormat="image/jpeg"
+                    className="w-full max-w-md"
+                  />
+                  <div className="absolute inset-0 border-4 border-blue-500/30 rounded-2xl pointer-events-none"></div>
+                </div>
+                
+                <button
+                  onClick={captureImage}
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-4 px-8 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center space-x-2 mx-auto"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>Capture Photo</span>
+                </button>
+              </div>
+            ) : (
+              // Form View
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Image Preview */}
+                <div>
+                  <h3 className="text-xl font-bold text-gray-800 mb-4">Captured Image</h3>
+                  <div className="relative">
+                    <img src={imageSrc} alt="Captured" className="w-full rounded-xl shadow-lg" />
+                    <div className="absolute top-3 right-3 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                      ✓ Ready
+                    </div>
+                  </div>
+                </div>
 
-            {/* Dropdown for purpose of visit */}
-            <label htmlFor="options" className="mt-4 block text-gray-700">
-              Select the Purpose of Visit:
-            </label>
-            <select
-              id="options"
-              value={selectedOption}
-              onChange={(e) => {
-                setSelectedOption(e.target.value);
-                setSelectedSubPurpose("");
-              }}
-              className="mt-2 p-2 border border-gray-300 rounded-lg"
-            >
-              <option value="" disabled>
-                Select an option
-              </option>
-              {getPurposes().map((purpose) => (
-                <option
-                  key={purpose}
-                  value={purpose}
-                  style={
-                    purpose === "NEW BUSINESS OPPORTUNITY - FIRST MEETING" ||
-                      purpose === "BUSINESS DEVELOPMENT- FOLLOW UP MEETING"
-                      ? { fontWeight: "bold" }
-                      : {}
-                  }
-                >
-                  {purpose}
-                </option>
-              ))}
-            </select>
+                {/* Form */}
+                <div className="space-y-6">
+                  <h3 className="text-xl font-bold text-gray-800">Attendance Details</h3>
+                  
+                  {/* Purpose Selection */}
+                  <div>
+                    <label htmlFor="options" className="block text-sm font-semibold text-gray-700 mb-3">
+                      Purpose of Visit *
+                    </label>
+                    <select
+                      id="options"
+                      value={selectedOption}
+                      onChange={(e) => {
+                        setSelectedOption(e.target.value);
+                        setSelectedSubPurpose("");
+                      }}
+                      className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    >
+                      <option value="" disabled>
+                        Select purpose
+                      </option>
+                      {getPurposes().map((purpose) => (
+                        <option
+                          key={purpose}
+                          value={purpose}
+                          className={
+                            purpose === "NEW BUSINESS OPPORTUNITY - FIRST MEETING" ||
+                            purpose === "BUSINESS DEVELOPMENT- FOLLOW UP MEETING"
+                              ? "font-bold"
+                              : ""
+                          }
+                        >
+                          {purpose}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-            {/* Sub-purpose for Existing Site Visit */}
-            {selectedOption === "Site Visit" && (
-              <>
-                <label
-                  htmlFor="sub-purpose"
-                  className="mt-4 block text-gray-700"
-                >
-                  Select Sub-Purpose:
-                </label>
-                <select
-                  id="sub-purpose"
-                  value={selectedSubPurpose}
-                  onChange={(e) => setSelectedSubPurpose(e.target.value)}
-                  className="mt-2 p-2 border border-gray-300 rounded-lg"
-                >
-                  <option value="" disabled>
-                    Select a sub-purpose
-                  </option>
-                  <option value="Customer End (CE)">Customer End (CE)</option>
-                  <option value="Tower End (TE)">Tower End (TE)</option>
-                </select>
-              </>
+                  {/* Sub-purpose for Site Visit */}
+                  {selectedOption === "Site Visit" && (
+                    <div>
+                      <label htmlFor="sub-purpose" className="block text-sm font-semibold text-gray-700 mb-3">
+                        Sub-Purpose *
+                      </label>
+                      <select
+                        id="sub-purpose"
+                        value={selectedSubPurpose}
+                        onChange={(e) => setSelectedSubPurpose(e.target.value)}
+                        className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      >
+                        <option value="" disabled>
+                          Select sub-purpose
+                        </option>
+                        <option value="Customer End (CE)">Customer End (CE)</option>
+                        <option value="Tower End (TE)">Tower End (TE)</option>
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Feedback */}
+                  <div>
+                    <label htmlFor="feedback" className="block text-sm font-semibold text-gray-700 mb-3">
+                      Details (max 200 characters)
+                    </label>
+                    <textarea
+                      id="feedback"
+                      value={feedback}
+                      onChange={(e) => setFeedback(e.target.value.slice(0, 200))}
+                      className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                      placeholder="Enter additional details..."
+                      rows={3}
+                    />
+                    <div className="text-right text-sm text-gray-500 mt-1">
+                      {feedback.length}/200
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex space-x-4">
+                    <button
+                      onClick={() => setImageSrc(null)}
+                      className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-6 rounded-xl font-semibold transition-all"
+                    >
+                      Retake Photo
+                    </button>
+                    <button
+                      onClick={handleSubmit}
+                      disabled={isLoading || !selectedOption}
+                      className={`flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-6 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 ${(isLoading || !selectedOption) && "opacity-50 cursor-not-allowed"}`}
+                    >
+                      {isLoading ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span>Submitting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span>Submit Attendance</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
 
-            {/* Feedback text box */}
-            <label htmlFor="feedback" className="mt-4 block text-gray-700">
-              Details (max 50 characters):
-            </label>
-            <input
-              type="text"
-              id="feedback"
-              value={feedback}
-              onChange={(e) => setFeedback(e.target.value.slice(0, 200))}
-              className="mt-2 p-2 border border-gray-300 rounded-lg"
-              placeholder="Enter Details"
-            />
-
-            <button
-              onClick={handleSubmit}
-              className={`bg-red-600 text-white p-2 ml-2 rounded-lg mt-4 ${isLoading && "opacity-50 cursor-not-allowed"
-                }`}
-              disabled={isLoading || !selectedOption}
-            >
-              {isLoading ? "Submitting..." : "Submit"}
-            </button>
+            {/* Error Display */}
+            {error && (
+              <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+                <div className="flex items-center space-x-3">
+                  <div className="text-red-500 text-xl">⚠️</div>
+                  <div className="text-red-700">{error}</div>
+                </div>
+              </div>
+            )}
           </div>
-        )}
-        {error && (
-          <div className="error mt-4 p-2 bg-red-100 text-red-700 border border-red-700 rounded-md">
-            {error}
-          </div>
-        )}
+        </div>
       </div>
     )
   );

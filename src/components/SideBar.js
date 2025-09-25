@@ -25,28 +25,32 @@ const Sidebar = () => {
 
   return (
     <div className="flex">
-      <div className="bg-white md:w-[90px] w-full p-3 mb-2 md:flex md:items-center md:justify-center">
-        <div className="rounded-xl p-4 bg-indigo-950 md:space-y-8 space-y-4">
-          <ul className="flex md:flex-col justify-around md:justify-start w-full md:w-auto">
-            <li className="mx-2 mb-4 md:mb-8">
+      <div className="w-full flex items-center justify-center">
+        <div className="rounded-2xl bg-gradient-to-b from-indigo-600 to-purple-600 p-4">
+          <ul className="flex md:flex-col justify-center items-center gap-8">
+            <li>
               <Link
                 to="/"
                 onClick={() => handleSetActive("home")}
-                className={`rounded-lg text-gray-400 text-4xl bg-transparent ${
-                  activeLink === "home" ? "bg-gray-800 text-white" : ""
+                className={`flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 ${
+                  activeLink === "home"
+                    ? "bg-white text-indigo-600"
+                    : "text-white/80 hover:bg-white/10"
                 }`}
               >
-                <FaHome />
+                <FaHome className="text-2xl" />
               </Link>
             </li>
-            <li className="mx-2 mb-4 md:mb-0">
+            <li>
               <button
                 onClick={() => handleSetActive("attendance")}
-                className={`rounded-lg text-gray-400 text-4xl bg-transparent ${
-                  activeLink === "attendance" ? "bg-gray-800 text-white" : ""
+                className={`flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 ${
+                  activeLink === "attendance"
+                    ? "bg-white text-indigo-600"
+                    : "text-white/80 hover:bg-white/10"
                 }`}
               >
-                <FaCameraRetro />
+                <FaCameraRetro className="text-2xl" />
               </button>
             </li>
           </ul>
