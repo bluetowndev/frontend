@@ -4,6 +4,7 @@ import HorizentalGraph from "../components/HorizentalGraph";
 import Jumbotron from "../components/Jumbotron";
 import Sidebar from "../components/SideBar";
 import CalendarView from "../components/CalendarView";
+import UserTargets from "../components/UserTargets";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { useAttendance } from "../hooks/useAttendance";
 import toast from "react-hot-toast";
@@ -314,6 +315,9 @@ const Home = () => {
 
               {/* Right Column */}
               <div className="space-y-4 sm:space-y-8">
+                {/* User Targets Card */}
+                <UserTargets />
+
                 {/* Calendar Card */}
                 <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
                   <div className="flex items-center space-x-3 sm:space-x-4 mb-4 sm:mb-6">

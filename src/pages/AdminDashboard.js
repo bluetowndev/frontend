@@ -4,6 +4,7 @@ import AdminSidebar from "../components/admin/Sidebar_Admin";
 import AdminCards from "../components/admin/Cards_Admin";
 import WorldMapAdmin from "../components/admin/WorldMap_Admin";
 import SiteAllocationManager from "../components/admin/SiteAllocationManager";
+import ExcelTargetUpload from "../components/admin/ExcelTargetUpload";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import * as XLSX from "xlsx";
@@ -252,6 +253,16 @@ const AdminDashboard = () => {
           >
             Site Allocation
           </button>
+          <button
+            onClick={() => setActiveTab("targets")}
+            className={`px-4 py-2 rounded-md transition duration-200 ${
+              activeTab === "targets"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-600 hover:text-blue-600"
+            }`}
+          >
+            Target Management
+          </button>
         </div>
 
         {/* Tab Content */}
@@ -338,6 +349,12 @@ const AdminDashboard = () => {
         {activeTab === "sites" && (
           <div className="flex-grow">
             <SiteAllocationManager />
+          </div>
+        )}
+
+        {activeTab === "targets" && (
+          <div className="flex-grow">
+            <ExcelTargetUpload />
           </div>
         )}
       </div>
