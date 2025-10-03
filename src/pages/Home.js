@@ -193,6 +193,11 @@ const Home = () => {
               </div>
             </div>
 
+            {/* Mobile: User Targets Card - Show first on mobile */}
+            <div className="block lg:hidden mb-6">
+              <UserTargets />
+            </div>
+
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
               <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
@@ -315,8 +320,10 @@ const Home = () => {
 
               {/* Right Column */}
               <div className="space-y-4 sm:space-y-8">
-                {/* User Targets Card */}
-                <UserTargets />
+                {/* User Targets Card - Hidden on mobile, shown on desktop */}
+                <div className="hidden lg:block">
+                  <UserTargets />
+                </div>
 
                 {/* Calendar Card */}
                 <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
