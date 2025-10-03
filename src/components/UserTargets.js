@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useUserTargets } from '../hooks/useUserTargets';
 import { useUserAchievements } from '../hooks/useUserAchievements';
 import toast from 'react-hot-toast';
+import lakshyaImage from '../assets/lakshya.jpg';
 
 const UserTargets = () => {
   const { getCurrentUserTargets, error, isLoading } = useUserTargets();
@@ -149,13 +150,13 @@ const UserTargets = () => {
 
   return (
     <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
-      <div className="flex items-center space-x-3 sm:space-x-4 mb-4 sm:mb-6">
-        <div className="bg-gradient-to-r from-orange-500 to-red-500 w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center">
-          <span className="text-white text-lg sm:text-xl">🎯</span>
-        </div>
-        <div>
-          <h2 className="text-lg sm:text-xl font-bold text-gray-800">Monthly Targets</h2>
-          <p className="text-xs sm:text-sm text-gray-500">2025 Target Goals</p>
+      <div className="flex items-center justify-center mb-4 sm:mb-6">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden">
+          <img 
+            src={lakshyaImage} 
+            alt="Lakshya" 
+            className="w-full h-full object-cover"
+          />
         </div>
       </div>
 
@@ -167,7 +168,7 @@ const UserTargets = () => {
         </div>
       ) : (
         <div className="space-y-3">
-          {['September', 'October', 'November'].map((month) => {
+          {['November', 'October', 'September'].map((month) => {
             const target = getTargetForMonth(month);
             const achievement = getAchievementForMonth(month);
             const isCurrentMonth = month === currentMonth;
@@ -201,7 +202,7 @@ const UserTargets = () => {
                       
                       {/* Show yesterday's date for October */}
                       {month === 'October' && (
-                        <div className="mt-2 p-2 bg-blue-50 rounded-lg border border-blue-200">
+                        <div className="mt-2 p-1.5 bg-blue-50 rounded-md border border-blue-200">
                           <p className="text-xs text-blue-600 font-medium">On Date:</p>
                           <p className="text-xs text-blue-800 font-semibold">{yesterdayDate}</p>
                         </div>
