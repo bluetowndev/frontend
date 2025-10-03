@@ -111,6 +111,10 @@ const ExcelAchievementUpload = () => {
     const sepIndex = headers.findIndex(header => 
       header && header.toString().toLowerCase().includes('sep')
     );
+    
+    const octIndex = headers.findIndex(header => 
+      header && header.toString().toLowerCase().includes('oct')
+    );
 
     if (emailIndex === -1) {
       console.log('Available headers:', headers);
@@ -118,9 +122,9 @@ const ExcelAchievementUpload = () => {
       return [];
     }
 
-    if (sepIndex === -1) {
+    if (sepIndex === -1 && octIndex === -1) {
       console.log('Available headers:', headers);
-      toast.error(`September column not found. Available headers: ${headers.join(', ')}. Please ensure there's a column for September achievements.`);
+      toast.error(`No achievement columns found. Available headers: ${headers.join(', ')}. Please ensure there are columns for September or October achievements.`);
       return [];
     }
 
@@ -130,22 +134,28 @@ const ExcelAchievementUpload = () => {
       if (row.length === 0) return; // Skip empty rows
 
       const email = row[emailIndex];
-      const september2025 = row[sepIndex];
+      const september2025 = sepIndex !== -1 ? row[sepIndex] : null;
+      const october2025 = octIndex !== -1 ? row[octIndex] : null;
 
       if (!email || email.toString().trim() === '') {
         console.warn(`Row ${index + 2}: No email found, skipping`);
         return;
       }
 
-      if (september2025 === undefined || september2025 === null || september2025 === '') {
-        console.warn(`Row ${index + 2}: No September achievement found for ${email}, skipping`);
-        return;
+      const achievement = { email: email.toString().trim() };
+      
+      if (september2025 !== undefined && september2025 !== null && september2025 !== '') {
+        achievement.september2025 = parseFloat(september2025) || 0;
+      }
+      
+      if (october2025 !== undefined && october2025 !== null && october2025 !== '') {
+        achievement.october2025 = parseFloat(october2025) || 0;
       }
 
-      achievements.push({
-        email: email.toString().trim(),
-        september2025: parseFloat(september2025) || 0
-      });
+      // Only add if at least one achievement is present
+      if (achievement.september2025 !== undefined || achievement.october2025 !== undefined) {
+        achievements.push(achievement);
+      }
     });
 
     return achievements;

@@ -9,6 +9,7 @@ const UserTargets = () => {
   const [targets, setTargets] = useState(null);
   const [achievements, setAchievements] = useState(null);
   const [currentMonth, setCurrentMonth] = useState('');
+  const [yesterdayDate, setYesterdayDate] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,6 +42,16 @@ const UserTargets = () => {
       'July', 'August', 'September', 'October', 'November', 'December'
     ];
     setCurrentMonth(monthNames[now.getMonth()]);
+
+    // Set yesterday's date
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    setYesterdayDate(yesterday.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    }));
   }, []);
 
   const getCurrentYearTargets = () => {
@@ -187,6 +198,14 @@ const UserTargets = () => {
                         )}
                       </h3>
                       <p className="text-xs text-gray-500">Target vs Achievement</p>
+                      
+                      {/* Show yesterday's date for October */}
+                      {month === 'October' && (
+                        <div className="mt-2 p-2 bg-blue-50 rounded-lg border border-blue-200">
+                          <p className="text-xs text-blue-600 font-medium">On Date:</p>
+                          <p className="text-xs text-blue-800 font-semibold">{yesterdayDate}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="text-right">
