@@ -1,26 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { useUserTargets } from '../hooks/useUserTargets';
+import { useUserAchievements } from '../hooks/useUserAchievements';
 import toast from 'react-hot-toast';
 
 const UserTargets = () => {
   const { getCurrentUserTargets, error, isLoading } = useUserTargets();
+  const { getCurrentUserAchievements } = useUserAchievements();
   const [targets, setTargets] = useState(null);
+  const [achievements, setAchievements] = useState(null);
   const [currentMonth, setCurrentMonth] = useState('');
 
   useEffect(() => {
-    const fetchTargets = async () => {
+    const fetchData = async () => {
       try {
-        const response = await getCurrentUserTargets();
-        if (response.success) {
-          setTargets(response.data);
+        // Fetch targets
+        const targetsResponse = await getCurrentUserTargets();
+        if (targetsResponse.success) {
+          setTargets(targetsResponse.data);
+        }
+
+        // Fetch achievements
+        const achievementsResponse = await getCurrentUserAchievements();
+        console.log('Achievements response:', achievementsResponse);
+        if (achievementsResponse.success) {
+          setAchievements(achievementsResponse.data);
+          console.log('Achievements data set:', achievementsResponse.data);
         }
       } catch (error) {
-        console.error('Error fetching targets:', error);
-        // Don't show error toast for targets as they might not exist yet
+        console.error('Error fetching data:', error);
+        // Don't show error toast as data might not exist yet
       }
     };
 
-    fetchTargets();
+    fetchData();
 
     // Set current month
     const now = new Date();
@@ -43,25 +55,61 @@ const UserTargets = () => {
     return target ? target.target : null;
   };
 
+  const getCurrentYearAchievements = () => {
+    if (!achievements || !achievements.achievements) return [];
+    
+    return achievements.achievements.filter(achievement => achievement.year === 2025);
+  };
+
+  const getAchievementForMonth = (month) => {
+    const yearAchievements = getCurrentYearAchievements();
+    const achievement = yearAchievements.find(a => a.month === month);
+    return achievement ? achievement.achievement : null;
+  };
+
   const formatTarget = (target) => {
     if (target === null || target === undefined) return 'Not Set';
     return target.toLocaleString();
   };
 
-  const getProgressColor = (month) => {
+  const getStatusColor = (month) => {
     const target = getTargetForMonth(month);
-    if (target === null) return 'text-gray-500';
-    if (target >= 100) return 'text-green-600';
-    if (target >= 50) return 'text-yellow-600';
+    const achievement = getAchievementForMonth(month);
+    
+    if (target === null || achievement === null) return 'text-gray-500';
+    
+    const percentage = (achievement / target) * 100;
+    
+    if (percentage >= 100) return 'text-green-600';
+    if (percentage >= 95) return 'text-yellow-600';
     return 'text-red-600';
   };
 
-  const getProgressBgColor = (month) => {
+  const getStatusBgColor = (month) => {
     const target = getTargetForMonth(month);
-    if (target === null) return 'bg-gray-100';
-    if (target >= 100) return 'bg-green-100';
-    if (target >= 50) return 'bg-yellow-100';
+    const achievement = getAchievementForMonth(month);
+    
+    if (target === null || achievement === null) return 'bg-gray-100';
+    
+    const percentage = (achievement / target) * 100;
+    
+    if (percentage >= 100) return 'bg-green-100';
+    if (percentage >= 95) return 'bg-yellow-100';
     return 'bg-red-100';
+  };
+
+  const getStatusText = (month) => {
+    const target = getTargetForMonth(month);
+    const achievement = getAchievementForMonth(month);
+    
+    if (target === null) return 'Target Not Set';
+    if (achievement === null) return 'No Achievement';
+    
+    const percentage = (achievement / target) * 100;
+    
+    if (percentage >= 100) return 'Target Achieved';
+    if (percentage >= 95) return 'Close to Target';
+    return 'Below Target';
   };
 
   if (isLoading) {
@@ -110,6 +158,7 @@ const UserTargets = () => {
         <div className="space-y-3">
           {['September', 'October', 'November'].map((month) => {
             const target = getTargetForMonth(month);
+            const achievement = getAchievementForMonth(month);
             const isCurrentMonth = month === currentMonth;
             
             return (
@@ -137,15 +186,28 @@ const UserTargets = () => {
                           </span>
                         )}
                       </h3>
-                      <p className="text-xs text-gray-500">Monthly Target</p>
+                      <p className="text-xs text-gray-500">Target vs Achievement</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className={`text-lg sm:text-xl font-bold ${getProgressColor(month)}`}>
-                      {formatTarget(target)}
+                    <div className="space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm font-bold text-gray-600">Target:</span>
+                        <span className="text-base font-bold text-gray-800">
+                          {formatTarget(target)}
+                        </span>
+                      </div>
+                      {achievement !== null && (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-bold text-gray-600">Achieved:</span>
+                          <span className="text-base font-bold text-gray-800">
+                            {achievement.toLocaleString()}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                    <div className={`text-xs px-2 py-1 rounded-full ${getProgressBgColor(month)} ${getProgressColor(month)}`}>
-                      {target !== null ? 'Set' : 'Not Set'}
+                    <div className={`text-sm font-bold px-2 py-1 rounded-full mt-2 ${getStatusBgColor(month)} ${getStatusColor(month)}`}>
+                      {getStatusText(month)}
                     </div>
                   </div>
                 </div>

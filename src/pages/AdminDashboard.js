@@ -5,6 +5,8 @@ import AdminCards from "../components/admin/Cards_Admin";
 import WorldMapAdmin from "../components/admin/WorldMap_Admin";
 import SiteAllocationManager from "../components/admin/SiteAllocationManager";
 import ExcelTargetUpload from "../components/admin/ExcelTargetUpload";
+import ExcelAchievementUpload from "../components/admin/ExcelAchievementUpload";
+import DebugAuth from "../components/DebugAuth";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import * as XLSX from "xlsx";
@@ -263,6 +265,16 @@ const AdminDashboard = () => {
           >
             Target Management
           </button>
+          <button
+            onClick={() => setActiveTab("achievements")}
+            className={`px-4 py-2 rounded-md transition duration-200 ${
+              activeTab === "achievements"
+                ? "bg-white text-green-600 shadow-sm"
+                : "text-gray-600 hover:text-green-600"
+            }`}
+          >
+            Achievement Upload
+          </button>
         </div>
 
         {/* Tab Content */}
@@ -357,7 +369,16 @@ const AdminDashboard = () => {
             <ExcelTargetUpload />
           </div>
         )}
+
+        {activeTab === "achievements" && (
+          <div className="flex-grow">
+            <ExcelAchievementUpload />
+          </div>
+        )}
       </div>
+      
+      {/* Debug component - remove this after fixing */}
+      <DebugAuth />
     </div>
   );
 };
