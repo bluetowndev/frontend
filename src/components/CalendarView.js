@@ -21,6 +21,11 @@ const CalendarView = () => {
     const data = await fetchAttendanceByDate(formattedDate);
     setAttendanceData(data);
     setShowModal(true);
+
+    // Automatically save distance when data is loaded
+    if (data && data.length > 0) {
+      await autoSaveDistance(data, formattedDate);
+    }
   };
 
   const convertToIST = (timestamp) => {
@@ -83,6 +88,50 @@ const CalendarView = () => {
     }, 0);
 
     return totalMeters / 1000;
+  };
+
+  const autoSaveDistance = async (data, date) => {
+    try {
+      const totalDistance = calculateTotalDistance(data);
+      const pointToPointDistances = data
+        .map((attendance, index) => {
+          if (index === 0) return null;
+
+          const distance = calculateDistances(data)[index];
+          const transitTime = calculateCallTime(data)[index];
+
+          return {
+            from: data[index - 1].locationName || "Unknown",
+            to: attendance.locationName || "Unknown",
+            distance,
+            transitTime,
+          };
+        })
+        .filter(Boolean);
+
+      const payload = {
+        date: date,
+        totalDistance,
+        pointToPointDistances,
+      };
+
+      const userData = JSON.parse(localStorage.getItem("user"));
+      const token = userData?.token;
+
+      if (!token) return;
+
+      await fetch(`${apiUrl}/api/attendance/save-total-distance`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+    } catch (error) {
+      console.error("Error auto-saving distance:", error);
+      // Silent failure - don't show error to user for auto-save
+    }
   };
 
   const saveDataToDB = async () => {
