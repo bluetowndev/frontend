@@ -19,6 +19,12 @@ const CalendarView = () => {
     setSelectedDate(formattedDate);
 
     const data = await fetchAttendanceByDate(formattedDate);
+    console.log('Attendance data received:', data);
+    console.log('Distance data in attendance:', data.map(a => ({ 
+      purpose: a.purpose, 
+      distanceFromPrevious: a.distanceFromPrevious,
+      location: a.location 
+    })));
     setAttendanceData(data);
     setShowModal(true);
 
@@ -65,12 +71,28 @@ const CalendarView = () => {
       if (index === 0) return null;
 
       let distance = attendance.distanceFromPrevious || "0 m";
-      if (distance.includes("km")) {
-        distance = parseFloat(distance) * 1000;
-      } else if (distance.includes("m")) {
-        distance = parseFloat(distance);
+      
+      // Handle cases where distanceFromPrevious might be null, undefined, or empty
+      if (!distance || distance === "N/A" || distance === "null" || distance === "undefined") {
+        distance = "0 m";
       }
-      return distance / 1000;
+      
+      // Parse the distance string
+      let numericDistance = 0;
+      if (typeof distance === "string") {
+        if (distance.includes("km")) {
+          numericDistance = parseFloat(distance.replace(" km", "")) || 0;
+        } else if (distance.includes("m")) {
+          numericDistance = (parseFloat(distance.replace(" m", "")) || 0) / 1000;
+        } else {
+          // Try to parse as a number
+          numericDistance = parseFloat(distance) || 0;
+        }
+      } else if (typeof distance === "number") {
+        numericDistance = distance;
+      }
+      
+      return numericDistance;
     });
   };
 
@@ -78,13 +100,26 @@ const CalendarView = () => {
     const totalMeters = attendanceData.reduce((total, attendance) => {
       let distance = attendance.distanceFromPrevious || "0 m";
 
-      if (distance.includes("km")) {
-        distance = parseFloat(distance) * 1000;
-      } else if (distance.includes("m")) {
-        distance = parseFloat(distance);
+      // Handle cases where distanceFromPrevious might be null, undefined, or empty
+      if (!distance || distance === "N/A" || distance === "null" || distance === "undefined") {
+        distance = "0 m";
       }
 
-      return total + distance;
+      let numericDistance = 0;
+      if (typeof distance === "string") {
+        if (distance.includes("km")) {
+          numericDistance = (parseFloat(distance.replace(" km", "")) || 0) * 1000;
+        } else if (distance.includes("m")) {
+          numericDistance = parseFloat(distance.replace(" m", "")) || 0;
+        } else {
+          // Try to parse as a number
+          numericDistance = parseFloat(distance) || 0;
+        }
+      } else if (typeof distance === "number") {
+        numericDistance = distance;
+      }
+
+      return total + numericDistance;
     }, 0);
 
     return totalMeters / 1000;
@@ -217,9 +252,16 @@ const CalendarView = () => {
                       </p>
                       <p>
                         <b>Transit Distance:</b>{" "}
-                        {calculateDistances(attendanceData)[index]
-                          ? `${calculateDistances(attendanceData)[index]} km`
-                          : "N/A"}
+                        {(() => {
+                          const distance = calculateDistances(attendanceData)[index];
+                          if (distance && distance > 0) {
+                            return `${distance.toFixed(2)} km`;
+                          } else if (distance === 0) {
+                            return "0.00 km";
+                          } else {
+                            return "N/A";
+                          }
+                        })()}
                       </p>
                     </>
                   )}
