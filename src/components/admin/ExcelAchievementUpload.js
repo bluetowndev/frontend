@@ -115,6 +115,10 @@ const ExcelAchievementUpload = () => {
     const octIndex = headers.findIndex(header => 
       header && header.toString().toLowerCase().includes('oct')
     );
+    
+    const novIndex = headers.findIndex(header => 
+      header && header.toString().toLowerCase().includes('nov')
+    );
 
     if (emailIndex === -1) {
       console.log('Available headers:', headers);
@@ -122,9 +126,9 @@ const ExcelAchievementUpload = () => {
       return [];
     }
 
-    if (sepIndex === -1 && octIndex === -1) {
+    if (sepIndex === -1 && octIndex === -1 && novIndex === -1) {
       console.log('Available headers:', headers);
-      toast.error(`No achievement columns found. Available headers: ${headers.join(', ')}. Please ensure there are columns for September or October achievements.`);
+      toast.error(`No achievement columns found. Available headers: ${headers.join(', ')}. Please ensure there are columns for September, October, or November achievements.`);
       return [];
     }
 
@@ -136,6 +140,7 @@ const ExcelAchievementUpload = () => {
       const email = row[emailIndex];
       const september2025 = sepIndex !== -1 ? row[sepIndex] : null;
       const october2025 = octIndex !== -1 ? row[octIndex] : null;
+      const november2025 = novIndex !== -1 ? row[novIndex] : null;
 
       if (!email || email.toString().trim() === '') {
         console.warn(`Row ${index + 2}: No email found, skipping`);
@@ -151,9 +156,13 @@ const ExcelAchievementUpload = () => {
       if (october2025 !== undefined && october2025 !== null && october2025 !== '') {
         achievement.october2025 = parseFloat(october2025) || 0;
       }
+      
+      if (november2025 !== undefined && november2025 !== null && november2025 !== '') {
+        achievement.november2025 = parseFloat(november2025) || 0;
+      }
 
       // Only add if at least one achievement is present
-      if (achievement.september2025 !== undefined || achievement.october2025 !== undefined) {
+      if (achievement.september2025 !== undefined || achievement.october2025 !== undefined || achievement.november2025 !== undefined) {
         achievements.push(achievement);
       }
     });
@@ -234,10 +243,10 @@ const ExcelAchievementUpload = () => {
         <div className="bg-gradient-to-r from-green-500 to-emerald-500 w-12 h-12 rounded-xl flex items-center justify-center">
           <span className="text-white text-xl">🏆</span>
         </div>
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900">Achievement Upload</h2>
-          <p className="text-sm text-gray-600">Upload September achievements for field engineers</p>
-        </div>
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">Achievement Upload</h2>
+            <p className="text-sm text-gray-600">Upload September, October, and November achievements for field engineers</p>
+          </div>
       </div>
 
       {/* Upload Area */}
@@ -277,7 +286,7 @@ const ExcelAchievementUpload = () => {
           
           <div className="text-xs text-gray-500">
             <p>Supported formats: .xlsx, .xls, .csv</p>
-            <p>Expected format: Field Engineer | September Achievement</p>
+            <p>Expected format: Field Engineer | September | October | November Achievement</p>
           </div>
         </div>
       </div>
@@ -304,9 +313,23 @@ const ExcelAchievementUpload = () => {
                   <span className="text-sm font-medium text-gray-900">
                     {achievement.email}
                   </span>
-                  <span className="text-sm text-green-600 font-medium">
-                    {achievement.september2025}
-                  </span>
+                  <div className="flex items-center space-x-3">
+                    {achievement.september2025 !== undefined && (
+                      <span className="text-sm text-green-600 font-medium">
+                        Sep: {achievement.september2025}
+                      </span>
+                    )}
+                    {achievement.october2025 !== undefined && (
+                      <span className="text-sm text-green-600 font-medium">
+                        Oct: {achievement.october2025}
+                      </span>
+                    )}
+                    {achievement.november2025 !== undefined && (
+                      <span className="text-sm text-green-600 font-medium">
+                        Nov: {achievement.november2025}
+                      </span>
+                    )}
+                  </div>
                 </div>
               ))}
               {previewData.length > 10 && (
@@ -354,7 +377,7 @@ const ExcelAchievementUpload = () => {
         <h4 className="text-sm font-medium text-blue-900 mb-2">Excel Format Requirements:</h4>
         <ul className="text-xs text-blue-800 space-y-1">
           <li>• First column: Field Engineer (Email addresses)</li>
-          <li>• Second column: September Achievement (Numeric values)</li>
+          <li>• Columns: September, October, November Achievement (Numeric values)</li>
           <li>• First row should contain headers</li>
           <li>• Data should start from the second row</li>
         </ul>

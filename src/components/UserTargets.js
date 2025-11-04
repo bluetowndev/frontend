@@ -200,8 +200,8 @@ const UserTargets = () => {
                       </h3>
                       <p className="text-xs text-gray-500">Target vs Achievement</p>
                       
-                      {/* Show yesterday's date for October */}
-                      {month === 'October' && (
+                      {/* Show yesterday's date for current month */}
+                      {isCurrentMonth && (
                         <div className="mt-2 p-1.5 bg-blue-50 rounded-md border border-blue-200">
                           <p className="text-xs text-blue-600 font-medium">On Date:</p>
                           <p className="text-xs text-blue-800 font-semibold">{yesterdayDate}</p>
