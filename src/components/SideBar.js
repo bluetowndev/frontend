@@ -25,37 +25,39 @@ const Sidebar = () => {
 
   return (
     <div className="flex">
-      <div className="w-full flex items-center justify-center">
-        <div className="rounded-2xl bg-gradient-to-b from-indigo-600 to-purple-600 p-4">
-          <ul className="flex md:flex-col justify-center items-center gap-8">
-            <li>
-              <Link
-                to="/"
-                onClick={() => handleSetActive("home")}
-                className={`flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 ${
-                  activeLink === "home"
-                    ? "bg-white text-indigo-600"
-                    : "text-white/80 hover:bg-white/10"
-                }`}
-              >
-                <FaHome className="text-2xl" />
-              </Link>
-            </li>
-            <li>
-              <button
-                onClick={() => handleSetActive("attendance")}
-                className={`flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 ${
-                  activeLink === "attendance"
-                    ? "bg-white text-indigo-600"
-                    : "text-white/80 hover:bg-white/10"
-                }`}
-              >
-                <FaCameraRetro className="text-2xl" />
-              </button>
-            </li>
-          </ul>
+      {!modalIsOpen && (
+        <div className="w-full flex items-center justify-center">
+          <div className="rounded-2xl bg-gradient-to-b from-indigo-600 to-purple-600 p-4">
+            <ul className="flex md:flex-col justify-center items-center gap-8">
+              <li>
+                <Link
+                  to="/"
+                  onClick={() => handleSetActive("home")}
+                  className={`flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 ${
+                    activeLink === "home"
+                      ? "bg-white text-indigo-600"
+                      : "text-white/80 hover:bg-white/10"
+                  }`}
+                >
+                  <FaHome className="text-2xl" />
+                </Link>
+              </li>
+              <li>
+                <button
+                  onClick={() => handleSetActive("attendance")}
+                  className={`flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 ${
+                    activeLink === "attendance"
+                      ? "bg-white text-indigo-600"
+                      : "text-white/80 hover:bg-white/10"
+                  }`}
+                >
+                  <FaCameraRetro className="text-2xl" />
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
-      </div>
+      )}
 
       <Modal
         isOpen={modalIsOpen}

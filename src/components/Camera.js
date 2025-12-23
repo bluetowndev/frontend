@@ -295,8 +295,8 @@ const Camera = ({ onClose }) => {
   // Show camera and main form only after summary is submitted or if no previous site visit
   return (
     isCameraOpen && (
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-2 md:p-4 z-[60]">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full h-[100vh] md:h-auto md:max-h-[90vh] flex flex-col relative">
           <button
             onClick={handleClose}
             className="absolute top-4 right-4 w-10 h-10 bg-red-100 hover:bg-red-200 rounded-full flex items-center justify-center text-red-600 transition-colors z-10"
@@ -304,10 +304,10 @@ const Camera = ({ onClose }) => {
             ×
           </button>
 
-          <div className="p-8">
+          <div className="p-4 md:p-8 flex-1 flex flex-col overflow-hidden min-h-0">
             {!imageSrc ? (
               // Camera View
-              <div className="text-center">
+              <div className="text-center flex-1 flex flex-col justify-center">
                 <div className="mb-6">
                   <h2 className="text-3xl font-bold text-gray-800 mb-2">Mark Attendance</h2>
                   <p className="text-gray-600">Position yourself in the frame and click capture</p>
@@ -336,107 +336,124 @@ const Camera = ({ onClose }) => {
               </div>
             ) : (
               // Form View
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Image Preview */}
-                <div>
-                  <h3 className="text-xl font-bold text-gray-800 mb-4">Captured Image</h3>
-                  <div className="relative">
-                    <img src={imageSrc} alt="Captured" className="w-full rounded-xl shadow-lg" />
-                    <div className="absolute top-3 right-3 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                      ✓ Ready
+              <div className="flex flex-col h-full min-h-0">
+                {/* Scrollable Content Area */}
+                <div className="flex-1 overflow-y-auto min-h-0">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 pb-4">
+                    {/* Image Preview */}
+                    <div>
+                      <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-3 md:mb-4">Captured Image</h3>
+                      <div className="relative">
+                        <img src={imageSrc} alt="Captured" className="w-full max-h-[300px] md:max-h-none object-contain rounded-xl shadow-lg bg-gray-50" />
+                        <div className="absolute top-2 right-2 md:top-3 md:right-3 bg-green-500 text-white px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-semibold">
+                          ✓ Ready
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Form */}
+                    <div className="space-y-4 md:space-y-6">
+                      <h3 className="text-lg md:text-xl font-bold text-gray-800">Attendance Details</h3>
+                      
+                      {/* Purpose Selection */}
+                      <div>
+                        <label htmlFor="options" className="block text-sm font-semibold text-gray-700 mb-2 md:mb-3">
+                          Purpose of Visit *
+                        </label>
+                        <select
+                          id="options"
+                          value={selectedOption}
+                          onChange={(e) => {
+                            setSelectedOption(e.target.value);
+                            setSelectedSubPurpose("");
+                          }}
+                          className="w-full p-3 md:p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm md:text-base"
+                        >
+                          <option value="" disabled>
+                            Select purpose
+                          </option>
+                          {getPurposes().map((purpose) => (
+                            <option
+                              key={purpose}
+                              value={purpose}
+                              className={
+                                purpose === "NEW BUSINESS OPPORTUNITY - FIRST MEETING" ||
+                                purpose === "BUSINESS DEVELOPMENT- FOLLOW UP MEETING"
+                                  ? "font-bold"
+                                  : ""
+                              }
+                            >
+                              {purpose}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Sub-purpose for Site Visit */}
+                      {selectedOption === "Site Visit" && (
+                        <div>
+                          <label htmlFor="sub-purpose" className="block text-sm font-semibold text-gray-700 mb-2 md:mb-3">
+                            Sub-Purpose *
+                          </label>
+                          <select
+                            id="sub-purpose"
+                            value={selectedSubPurpose}
+                            onChange={(e) => setSelectedSubPurpose(e.target.value)}
+                            className="w-full p-3 md:p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm md:text-base"
+                          >
+                            <option value="" disabled>
+                              Select sub-purpose
+                            </option>
+                            <option value="Customer End (CE)">Customer End (CE)</option>
+                            <option value="Tower End (TE)">Tower End (TE)</option>
+                          </select>
+                        </div>
+                      )}
+
+                      {/* Feedback */}
+                      <div>
+                        <label htmlFor="feedback" className="block text-sm font-semibold text-gray-700 mb-2 md:mb-3">
+                          Details (max 200 characters)
+                        </label>
+                        <textarea
+                          id="feedback"
+                          value={feedback}
+                          onChange={(e) => setFeedback(e.target.value.slice(0, 200))}
+                          className="w-full p-3 md:p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none text-sm md:text-base"
+                          placeholder="Enter additional details..."
+                          rows={3}
+                        />
+                        <div className="text-right text-xs md:text-sm text-gray-500 mt-1">
+                          {feedback.length}/200
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Form */}
-                <div className="space-y-6">
-                  <h3 className="text-xl font-bold text-gray-800">Attendance Details</h3>
-                  
-                  {/* Purpose Selection */}
-                  <div>
-                    <label htmlFor="options" className="block text-sm font-semibold text-gray-700 mb-3">
-                      Purpose of Visit *
-                    </label>
-                    <select
-                      id="options"
-                      value={selectedOption}
-                      onChange={(e) => {
-                        setSelectedOption(e.target.value);
-                        setSelectedSubPurpose("");
-                      }}
-                      className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    >
-                      <option value="" disabled>
-                        Select purpose
-                      </option>
-                      {getPurposes().map((purpose) => (
-                        <option
-                          key={purpose}
-                          value={purpose}
-                          className={
-                            purpose === "NEW BUSINESS OPPORTUNITY - FIRST MEETING" ||
-                            purpose === "BUSINESS DEVELOPMENT- FOLLOW UP MEETING"
-                              ? "font-bold"
-                              : ""
-                          }
-                        >
-                          {purpose}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Sub-purpose for Site Visit */}
-                  {selectedOption === "Site Visit" && (
-                    <div>
-                      <label htmlFor="sub-purpose" className="block text-sm font-semibold text-gray-700 mb-3">
-                        Sub-Purpose *
-                      </label>
-                      <select
-                        id="sub-purpose"
-                        value={selectedSubPurpose}
-                        onChange={(e) => setSelectedSubPurpose(e.target.value)}
-                        className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      >
-                        <option value="" disabled>
-                          Select sub-purpose
-                        </option>
-                        <option value="Customer End (CE)">Customer End (CE)</option>
-                        <option value="Tower End (TE)">Tower End (TE)</option>
-                      </select>
-                    </div>
-                  )}
-
-                  {/* Feedback */}
-                  <div>
-                    <label htmlFor="feedback" className="block text-sm font-semibold text-gray-700 mb-3">
-                      Details (max 200 characters)
-                    </label>
-                    <textarea
-                      id="feedback"
-                      value={feedback}
-                      onChange={(e) => setFeedback(e.target.value.slice(0, 200))}
-                      className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
-                      placeholder="Enter additional details..."
-                      rows={3}
-                    />
-                    <div className="text-right text-sm text-gray-500 mt-1">
-                      {feedback.length}/200
+                {/* Error Display */}
+                {error && (
+                  <div className="mt-4 mb-2 p-3 md:p-4 bg-red-50 border border-red-200 rounded-xl">
+                    <div className="flex items-center space-x-3">
+                      <div className="text-red-500 text-xl">⚠️</div>
+                      <div className="text-red-700 text-sm md:text-base">{error}</div>
                     </div>
                   </div>
+                )}
 
-                  {/* Action Buttons */}
-                  <div className="flex space-x-4">
+                {/* Sticky Action Buttons */}
+                <div className="flex-shrink-0 border-t border-gray-200 pt-3 md:pt-4 mt-3 md:mt-4 bg-white">
+                  <div className="flex space-x-3 md:space-x-4">
                     <button
                       onClick={() => setImageSrc(null)}
-                      className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-6 rounded-xl font-semibold transition-all"
+                      className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-4 md:px-6 rounded-xl font-semibold transition-all text-sm md:text-base"
                     >
                       Retake Photo
                     </button>
                     <button
                       onClick={handleSubmit}
                       disabled={isLoading || !selectedOption}
-                      className={`flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-6 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 ${(isLoading || !selectedOption) && "opacity-50 cursor-not-allowed"}`}
+                      className={`flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-4 md:px-6 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 text-sm md:text-base ${(isLoading || !selectedOption) && "opacity-50 cursor-not-allowed"}`}
                     >
                       {isLoading ? (
                         <>
@@ -453,16 +470,6 @@ const Camera = ({ onClose }) => {
                       )}
                     </button>
                   </div>
-                </div>
-              </div>
-            )}
-
-            {/* Error Display */}
-            {error && (
-              <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-                <div className="flex items-center space-x-3">
-                  <div className="text-red-500 text-xl">⚠️</div>
-                  <div className="text-red-700">{error}</div>
                 </div>
               </div>
             )}
