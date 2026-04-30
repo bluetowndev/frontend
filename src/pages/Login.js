@@ -69,11 +69,12 @@ const Login = () => {
             >
               WORKTRACK
             </h1>
-            <TypingEffect
-              text="Simplifying Field Work"
-              className="text-3xl lg:text-4xl font-bold text-blue-200"
-              style={{ fontFamily: "'Raleway', sans-serif" }}
-            />
+           <p
+  className="text-xl font-semibold text-blue-200 text-center"
+  style={{ fontFamily: "'Raleway', sans-serif" }}
+>
+  Simplifying Field Work
+</p>
             <div className="mt-8 space-y-4 text-blue-100">
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
