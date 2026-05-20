@@ -76,8 +76,6 @@ const Home = () => {
         if (attendanceData.length > 0) {
           // Calculate and save the total distance for today
           await calculateAndSaveTotalDistance(attendanceData, formattedDate);
-        } else {
-          toast.info("No attendance data available for today.");
         }
       } catch (error) {
         toast.error("Failed to save today's total distance.");
@@ -153,9 +151,7 @@ const Home = () => {
   
       const result = await response.json();
   
-      if (response.ok) {
-        toast.success(result.message || "Total distance saved successfully!");
-      } else {
+      if (!response.ok) {
         toast.error(result.message || "Failed to save total distance.");
       }
     } catch (error) {
@@ -194,9 +190,11 @@ const Home = () => {
             </div>
 
             {/* Mobile: User Targets Card - Show first on mobile */}
-            <div className="block lg:hidden mb-6">
-              <UserTargets />
-            </div>
+            {user && user.role === 'user' && (
+              <div className="block lg:hidden mb-6">
+                <UserTargets />
+              </div>
+            )}
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
@@ -304,25 +302,26 @@ const Home = () => {
                     </div>
                   </div>
                   <HorizentalGraph
-                    startDate="2025-11-01"
-                    endDate="2025-11-30"
+                    startDate="2026-02-01"
+                    endDate="2026-02-28"
                     holidayArray={[
-                      "2025-11-02",
-                      "2025-11-09",
-                      "2025-11-16",
-                      "2025-11-23",
-                      "2025-11-30",
+                      "2026-02-01",
+                      "2026-02-08",
+                      "2026-02-15",
+                      "2026-02-22"
                     ]}
                   />
                 </div>
               </div>
 
               {/* Right Column */}
-              <div className="space-y-4 sm:space-y-8">
+              <div className="space-y-4 sm:space-y-6 lg:space-y-4">
                 {/* User Targets Card - Hidden on mobile, shown on desktop */}
-                <div className="hidden lg:block">
-                  <UserTargets />
-                </div>
+                {user && user.role === 'user' && (
+                  <div className="hidden lg:block">
+                    <UserTargets />
+                  </div>
+                )}
 
                 {/* Calendar Card */}
                 <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
@@ -337,24 +336,9 @@ const Home = () => {
                   </div>
                   <CalendarView />
                 </div>
-
-                {/* Help Card */}
-                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-4 sm:p-6 text-white">
-                  <div className="flex items-center space-x-3 sm:space-x-4 mb-4 sm:mb-6">
-                    <div className="bg-white/20 w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                      <span className="text-xl sm:text-2xl">🤝</span>
-                    </div>
-                    <h2 className="text-lg sm:text-xl font-bold">Need Help?</h2>
-                  </div>
-                  <p className="text-indigo-100 text-sm sm:text-base mb-4 sm:mb-6">
-                    Having trouble with attendance tracking? Our support team is here to help you 24/7.
-                  </p>
-                  <button className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-xl py-2.5 sm:py-3 px-4 text-sm sm:text-base font-medium transition-all duration-200">
-                    Contact Support
-                  </button>
-                </div>
               </div>
             </div>
+
           </div>
         </div>
       </div>

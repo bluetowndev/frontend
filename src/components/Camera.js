@@ -4,6 +4,49 @@ import { useAttendance } from "../hooks/useAttendance";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
+// India approximate bounds (lat/lng) to reject clearly wrong coordinates
+const INDIA_BOUNDS = { latMin: 6, latMax: 36, lngMin: 67, lngMax: 98 };
+
+const getCurrentLocation = () => {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error("Geolocation is not supported by this browser."));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        resolve({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+      },
+      (err) => {
+        const message =
+          err.code === 1
+            ? "Location access denied. Please allow location to mark attendance."
+            : err.code === 2
+            ? "Location unavailable. Please check GPS/network and try again."
+            : "Location request timed out. Please try again.";
+        reject(new Error(message));
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 20000,
+      }
+    );
+  });
+};
+
+const isWithinIndia = (lat, lng) => {
+  return (
+    lat >= INDIA_BOUNDS.latMin &&
+    lat <= INDIA_BOUNDS.latMax &&
+    lng >= INDIA_BOUNDS.lngMin &&
+    lng <= INDIA_BOUNDS.lngMax
+  );
+};
+
 const Camera = ({ onClose }) => {
   const webcamRef = useRef(null);
   const [imageSrc, setImageSrc] = useState(null);
@@ -126,17 +169,10 @@ const Camera = ({ onClose }) => {
 
     checkPreviousSiteVisit();
 
-    // Get user's current location
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        setLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        });
-      });
-    } else {
-      toast.error("Geolocation is not supported by this browser.");
-    }
+    // Get user's current location (fresh, high-accuracy, no cache)
+    getCurrentLocation()
+      .then(setLocation)
+      .catch((err) => toast.error(err.message));
   }, []);
 
   const captureImage = () => {
@@ -179,11 +215,6 @@ const Camera = ({ onClose }) => {
 
   const handleSubmit = async () => {
     try {
-      if (!location.lat || !location.lng) {
-        toast.error("Please allow location access to mark attendance.");
-        return;
-      }
-
       if (!selectedOption) {
         toast.error("Please select a purpose for your visit.");
         return;
@@ -194,11 +225,30 @@ const Camera = ({ onClose }) => {
         return;
       }
 
+      // Get a fresh location at submit time to avoid stale/cached wrong coordinates
+      toast.loading("Getting your location...");
+      let submitLocation;
+      try {
+        submitLocation = await getCurrentLocation();
+      } catch (err) {
+        toast.dismiss();
+        toast.error(err.message);
+        return;
+      }
+      toast.dismiss();
+
+      if (!isWithinIndia(submitLocation.lat, submitLocation.lng)) {
+        toast.error(
+          "Location appears to be outside India. Please ensure GPS is on and you're not using a VPN, then try again."
+        );
+        return;
+      }
+
       const userId = JSON.parse(localStorage.getItem("user"))._id;
 
       await markAttendance(
         imageSrc,
-        location,
+        submitLocation,
         userId,
         selectedOption,
         feedback,

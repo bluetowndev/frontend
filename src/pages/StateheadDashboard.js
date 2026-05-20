@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from "react";
-// import LeaveApproval from "../components/StateHead/LeaveApproval";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import * as XLSX from 'xlsx';
@@ -237,7 +236,6 @@ const StateheadDashboard = () => {
 
         if (response.ok) {
           setAttendanceData(data);
-          toast.success('Attendance data fetched successfully');
         } else {
           console.error('Failed to fetch attendance data:', data.error);
           toast.error('Failed to fetch attendance data');
@@ -374,11 +372,6 @@ const StateheadDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
-      {/* Leave Approval Section - Commented out */}
-      {/* <div className="mb-6 md:mx-5">
-        <LeaveApproval />
-      </div> */}
-
       {/* Header Section */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">State Head Dashboard</h1>
