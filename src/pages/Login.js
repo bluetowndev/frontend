@@ -22,7 +22,7 @@ const Login = () => {
       <div className="absolute inset-0">
         <GeminiWave />
       </div>
-      
+
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-10 -left-10 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
@@ -47,11 +47,12 @@ const Login = () => {
           >
             WORKTRACK
           </h1>
-          <TypingEffect
-            text="Simplifying Field Work"
-            className="text-xl font-semibold text-blue-200 text-center"
-            style={{ fontFamily: "'Raleway', sans-serif" }}
-          />
+          <p
+              className="text-xl font-semibold text-blue-200 text-center"
+              style={{ fontFamily: "'Raleway', sans-serif" }}
+            >
+              Simplifying Field Work
+            </p>
         </div>
 
         {/* Branding Section - Desktop */}
@@ -69,11 +70,12 @@ const Login = () => {
             >
               WORKTRACK
             </h1>
-            <TypingEffect
-              text="Simplifying Field Work"
-              className="text-3xl lg:text-4xl font-bold text-blue-200"
+            <p
+              className="text-xl font-semibold text-blue-200 text-center"
               style={{ fontFamily: "'Raleway', sans-serif" }}
-            />
+            >
+              Simplifying Field Work
+            </p>
             <div className="mt-8 space-y-4 text-blue-100">
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
@@ -163,9 +165,9 @@ const Login = () => {
               <GradientShineButton
                 type="submit"
                 disabled={isLoading}
-                sx={{ 
-                  width: '100%', 
-                  padding: '16px', 
+                sx={{
+                  width: '100%',
+                  padding: '16px',
                   borderRadius: '12px',
                   fontSize: '16px',
                   fontWeight: '600'
@@ -233,7 +235,7 @@ const Login = () => {
             </h2>
             <p className="text-blue-200 text-lg">Real-time attendance monitoring across all locations</p>
           </div>
-          
+
           <HorizontalCards />
         </div>
       </div>
