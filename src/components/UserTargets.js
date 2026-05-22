@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useUserTargets } from '../hooks/useUserTargets';
 import { useUserAchievements } from '../hooks/useUserAchievements';
-import toast from 'react-hot-toast';
 import lakshyaImage from '../assets/lakshya.jpg';
 
 const UserTargets = () => {
@@ -58,7 +57,7 @@ const UserTargets = () => {
   const getCurrentYearTargets = () => {
     if (!targets || !targets.targets) return [];
     
-    return targets.targets.filter(target => target.year === 2025);
+    return targets.targets.filter(target => target.year === 2026);
   };
 
   const getTargetForMonth = (month) => {
@@ -70,7 +69,7 @@ const UserTargets = () => {
   const getCurrentYearAchievements = () => {
     if (!achievements || !achievements.achievements) return [];
     
-    return achievements.achievements.filter(achievement => achievement.year === 2025);
+    return achievements.achievements.filter(achievement => achievement.year === 2026);
   };
 
   const getAchievementForMonth = (month) => {
@@ -79,10 +78,6 @@ const UserTargets = () => {
     return achievement ? achievement.achievement : null;
   };
 
-  const formatTarget = (target) => {
-    if (target === null || target === undefined) return 'Not Set';
-    return target.toLocaleString();
-  };
 
   const getStatusColor = (month) => {
     const target = getTargetForMonth(month);
@@ -163,15 +158,16 @@ const UserTargets = () => {
       {!hasAnyTargets ? (
         <div className="text-center py-8">
           <div className="text-gray-400 text-4xl mb-4">🎯</div>
-          <p className="text-gray-500 text-sm">No targets set for 2025</p>
+          <p className="text-gray-500 text-sm">No targets set for 2026</p>
           <p className="text-gray-400 text-xs mt-1">Contact your manager to set targets</p>
         </div>
       ) : (
         <div className="space-y-3">
-          {['November', 'October', 'September'].map((month) => {
+          {['May', 'June', 'July'].map((month) => {
             const target = getTargetForMonth(month);
             const achievement = getAchievementForMonth(month);
-            const isCurrentMonth = month === currentMonth;
+            const isCurrentMonth =
+                  month === currentMonth && new Date().getFullYear() === 2026;
             
             return (
               <div
@@ -191,7 +187,7 @@ const UserTargets = () => {
                       <h3 className={`font-semibold text-sm ${
                         isCurrentMonth ? 'text-orange-800' : 'text-gray-700'
                       }`}>
-                        {month} 2025
+                        {month} 2026
                         {isCurrentMonth && (
                           <span className="ml-2 text-xs bg-orange-200 text-orange-800 px-2 py-1 rounded-full">
                             Current
@@ -214,14 +210,14 @@ const UserTargets = () => {
                       <div className="flex items-center space-x-2">
                         <span className="text-sm font-bold text-gray-600">Target:</span>
                         <span className="text-base font-bold text-gray-800">
-                          {formatTarget(target)}
+                          {target !== null ? Math.round(target).toLocaleString() : 'Not Set'}
                         </span>
                       </div>
                       {achievement !== null && (
                         <div className="flex items-center space-x-2">
                           <span className="text-sm font-bold text-gray-600">Achieved:</span>
                           <span className="text-base font-bold text-gray-800">
-                            {achievement.toLocaleString()}
+                            {Math.round(achievement).toLocaleString()}
                           </span>
                         </div>
                       )}
