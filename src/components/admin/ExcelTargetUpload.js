@@ -103,16 +103,16 @@ const ExcelTargetUpload = () => {
       )
     );
     
-    const sepIndex = headers.findIndex(header => 
-      header && header.toString().toLowerCase().includes('sep')
+    const mayIndex = headers.findIndex(header => 
+      header && header.toString().toLowerCase().includes('may')
     );
     
-    const octIndex = headers.findIndex(header => 
-      header && header.toString().toLowerCase().includes('oct')
+    const juneIndex = headers.findIndex(header => 
+      header && header.toString().toLowerCase().includes('june')
     );
     
-    const novIndex = headers.findIndex(header => 
-      header && header.toString().toLowerCase().includes('nov')
+    const julyIndex = headers.findIndex(header => 
+      header && header.toString().toLowerCase().includes('july')
     );
 
     if (emailIndex === -1) {
@@ -135,9 +135,9 @@ const ExcelTargetUpload = () => {
 
         const target = {
           email,
-          september2025: sepIndex !== -1 && row[sepIndex] ? parseFloat(row[sepIndex]) || 0 : 0,
-          october2025: octIndex !== -1 && row[octIndex] ? parseFloat(row[octIndex]) || 0 : 0,
-          november2025: novIndex !== -1 && row[novIndex] ? parseFloat(row[novIndex]) || 0 : 0
+          may2026:  mayIndex !== -1 && row[mayIndex] ? parseFloat(row[mayIndex]) || 0 : 0,
+          june2026: juneIndex !== -1 && row[juneIndex] ? parseFloat(row[juneIndex]) || 0 : 0,
+          july2026: julyIndex !== -1 && row[julyIndex] ? parseFloat(row[julyIndex]) || 0 : 0
         };
 
         targets.push(target);
@@ -235,9 +235,9 @@ const ExcelTargetUpload = () => {
             <div className="mt-4 text-sm text-gray-500">
               <p>Expected format:</p>
               <p>• Column 1: Field Engineer (Email)</p>
-              <p>• Column 2: Target Sep'25</p>
-              <p>• Column 3: Target Oct'25</p>
-              <p>• Column 4: Target Nov'25</p>
+              <p>• Column 2: Target May'26</p>
+              <p>• Column 3: Target June'26</p>
+              <p>• Column 4: Target July'26</p>
             </div>
           </div>
         ) : (
@@ -270,18 +270,18 @@ const ExcelTargetUpload = () => {
               <thead className="bg-gray-50 sticky top-0">
                 <tr>
                   <th className="px-3 py-2 text-left font-medium text-gray-700">Email</th>
-                  <th className="px-3 py-2 text-left font-medium text-gray-700">Sep 2025</th>
-                  <th className="px-3 py-2 text-left font-medium text-gray-700">Oct 2025</th>
-                  <th className="px-3 py-2 text-left font-medium text-gray-700">Nov 2025</th>
+                  <th className="px-3 py-2 text-left font-medium text-gray-700">May 2026</th>
+                  <th className="px-3 py-2 text-left font-medium text-gray-700">June 2026</th>
+                  <th className="px-3 py-2 text-left font-medium text-gray-700">July 2026</th>
                 </tr>
               </thead>
               <tbody>
                 {previewData.slice(0, 10).map((target, index) => (
                   <tr key={index} className="border-b border-gray-100">
                     <td className="px-3 py-2 text-gray-600">{target.email}</td>
-                    <td className="px-3 py-2 text-gray-600">{target.september2025}</td>
-                    <td className="px-3 py-2 text-gray-600">{target.october2025}</td>
-                    <td className="px-3 py-2 text-gray-600">{target.november2025}</td>
+                    <td className="px-3 py-2 text-gray-600">{target.may2026}</td>
+                    <td className="px-3 py-2 text-gray-600">{target.june2026}</td>
+                    <td className="px-3 py-2 text-gray-600">{target.july2026}</td>
                   </tr>
                 ))}
                 {previewData.length > 10 && (
@@ -321,7 +321,7 @@ const ExcelTargetUpload = () => {
         <h4 className="font-semibold text-blue-800 mb-2">Instructions:</h4>
         <ul className="text-sm text-blue-700 space-y-1">
           <li>• Ensure the first column contains email addresses</li>
-          <li>• Column headers should include "Sep", "Oct", "Nov" for 2025 targets</li>
+          <li>• Column headers should include "May", "June", "July" for 2026 targets</li>
           <li>• Target values should be numeric</li>
           <li>• Users must exist in the system for targets to be assigned</li>
         </ul>
