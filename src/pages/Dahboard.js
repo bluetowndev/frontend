@@ -28,14 +28,6 @@ const Dashboard = () => {
       bgPattern: "bg-gradient-to-br"
     },
     { 
-      id: "onLeave", 
-      text: "On Leave", 
-      color: "from-blue-400 to-blue-600", 
-      icon: "🌴", 
-      api: `${apiUrl}/api/attendance/onLeave`,
-      bgPattern: "bg-gradient-to-br"
-    },
-    { 
       id: "absent", 
       text: "Absent", 
       color: "from-gray-400 to-gray-600", 
@@ -60,20 +52,12 @@ const Dashboard = () => {
     setLoading(true);
     setError(null);
 
-    toast.loading("Loading data...", {
-      style: {
-        borderRadius: '10px',
-        background: '#333',
-        color: '#fff',
-      }
-    });
     const user = JSON.parse(localStorage.getItem("user"));
     const token = user?.token;
 
     if (!token) {
       setError("Authorization token not found.");
       setLoading(false);
-      toast.dismiss();
       return;
     }
 
@@ -127,13 +111,6 @@ const Dashboard = () => {
       }
       
       setData(transformedData);
-      toast.success("Data loaded successfully!", {
-        style: {
-          borderRadius: '10px',
-          background: '#4ade80',
-          color: '#fff',
-        }
-      });
     } catch (err) {
       console.error("API Error:", err);
       setError("Failed to fetch data. Please try again.");
@@ -146,7 +123,6 @@ const Dashboard = () => {
       });
     } finally {
       setLoading(false);
-      toast.dismiss();
     }
   };
 

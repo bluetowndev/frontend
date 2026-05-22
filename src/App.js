@@ -11,6 +11,7 @@ import Footer from "./components/Footer";
 import { Toaster } from "react-hot-toast";
 import StateheadDashboard from "./pages/StateheadDashboard";
 import Dashboard from "./pages/Dahboard"; // Import the new Dashboard page
+import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 
 function App() {
   const { user } = useAuthContext();
@@ -30,6 +31,8 @@ function App() {
                 user ? (
                   user.role === "admin" ? (
                     <Navigate to="/admin-dashboard" />
+                  ) : user.role === "superadmin" ? (
+                    <Navigate to="/superadmin-dashboard" />
                   ) : user.role === "statehead" ? (
                     <Navigate to="/statehead-dashboard" />
                   ) : user.role === "dashboard" ? (
@@ -57,6 +60,16 @@ function App() {
               element={
                 user && user.role === "admin" ? (
                   <AdminDashboard />
+                ) : (
+                  <Navigate to="/" />
+                )
+              }
+            />
+            <Route
+              path="/superadmin-dashboard"
+              element={
+                user && user.role === "superadmin" ? (
+                  <SuperAdminDashboard />
                 ) : (
                   <Navigate to="/" />
                 )
