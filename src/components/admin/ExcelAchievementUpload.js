@@ -108,16 +108,16 @@ const ExcelAchievementUpload = () => {
       )
     );
     
-    const sepIndex = headers.findIndex(header => 
-      header && header.toString().toLowerCase().includes('sep')
+    const mayIndex = headers.findIndex(header => 
+      header && header.toString().toLowerCase().includes('may')
     );
     
-    const octIndex = headers.findIndex(header => 
-      header && header.toString().toLowerCase().includes('oct')
+    const juneIndex = headers.findIndex(header => 
+      header && header.toString().toLowerCase().includes('june')
     );
     
-    const novIndex = headers.findIndex(header => 
-      header && header.toString().toLowerCase().includes('nov')
+    const julyIndex = headers.findIndex(header => 
+      header && header.toString().toLowerCase().includes('july')
     );
 
     if (emailIndex === -1) {
@@ -126,9 +126,9 @@ const ExcelAchievementUpload = () => {
       return [];
     }
 
-    if (sepIndex === -1 && octIndex === -1 && novIndex === -1) {
+    if (mayIndex === -1 && juneIndex === -1 && julyIndex === -1) {
       console.log('Available headers:', headers);
-      toast.error(`No achievement columns found. Available headers: ${headers.join(', ')}. Please ensure there are columns for September, October, or November achievements.`);
+      toast.error(`No achievement columns found. Available headers: ${headers.join(', ')}. Please ensure there are columns for May, June, or July 2026 achievements.`);
       return [];
     }
 
@@ -138,9 +138,9 @@ const ExcelAchievementUpload = () => {
       if (row.length === 0) return; // Skip empty rows
 
       const email = row[emailIndex];
-      const september2025 = sepIndex !== -1 ? row[sepIndex] : null;
-      const october2025 = octIndex !== -1 ? row[octIndex] : null;
-      const november2025 = novIndex !== -1 ? row[novIndex] : null;
+      const may2026 = mayIndex !== -1 ? row[mayIndex] : null;
+      const june2026 = juneIndex !== -1 ? row[juneIndex] : null;
+      const july2026 = julyIndex !== -1 ? row[julyIndex] : null;
 
       if (!email || email.toString().trim() === '') {
         console.warn(`Row ${index + 2}: No email found, skipping`);
@@ -149,20 +149,20 @@ const ExcelAchievementUpload = () => {
 
       const achievement = { email: email.toString().trim() };
       
-      if (september2025 !== undefined && september2025 !== null && september2025 !== '') {
-        achievement.september2025 = parseFloat(september2025) || 0;
-      }
-      
-      if (october2025 !== undefined && october2025 !== null && october2025 !== '') {
-        achievement.october2025 = parseFloat(october2025) || 0;
-      }
-      
-      if (november2025 !== undefined && november2025 !== null && november2025 !== '') {
-        achievement.november2025 = parseFloat(november2025) || 0;
-      }
+     if (may2026 !== undefined && may2026 !== null && may2026 !== '') {
+  achievement.may2026 = parseFloat(may2026) || 0;
+}
+
+if (june2026 !== undefined && june2026 !== null && june2026 !== '') {
+  achievement.june2026 = parseFloat(june2026) || 0;
+}
+
+if (july2026 !== undefined && july2026 !== null && july2026 !== '') {
+  achievement.july2026 = parseFloat(july2026) || 0;
+}
 
       // Only add if at least one achievement is present
-      if (achievement.september2025 !== undefined || achievement.october2025 !== undefined || achievement.november2025 !== undefined) {
+      if (achievement.may2026 !== undefined || achievement.june2026 !== undefined || achievement.july2026 !== undefined) {
         achievements.push(achievement);
       }
     });
@@ -245,7 +245,7 @@ const ExcelAchievementUpload = () => {
         </div>
           <div>
             <h2 className="text-xl font-semibold text-gray-900">Achievement Upload</h2>
-            <p className="text-sm text-gray-600">Upload September, October, and November achievements for field engineers</p>
+            <p className="text-sm text-gray-600">Upload May, June, and July 2026 achievements for field engineers</p>
           </div>
       </div>
 
@@ -286,7 +286,7 @@ const ExcelAchievementUpload = () => {
           
           <div className="text-xs text-gray-500">
             <p>Supported formats: .xlsx, .xls, .csv</p>
-            <p>Expected format: Field Engineer | September | October | November Achievement</p>
+            <p>Expected format: Field Engineer | May | June | July Achievement</p>
           </div>
         </div>
       </div>
@@ -314,19 +314,19 @@ const ExcelAchievementUpload = () => {
                     {achievement.email}
                   </span>
                   <div className="flex items-center space-x-3">
-                    {achievement.september2025 !== undefined && (
+                    {achievement.may2026 !== undefined && (
                       <span className="text-sm text-green-600 font-medium">
-                        Sep: {achievement.september2025}
+                        May: {achievement.may2026}
                       </span>
                     )}
-                    {achievement.october2025 !== undefined && (
+                    {achievement.june2026 !== undefined && (
                       <span className="text-sm text-green-600 font-medium">
-                        Oct: {achievement.october2025}
+                        June: {achievement.june2026}
                       </span>
                     )}
-                    {achievement.november2025 !== undefined && (
+                    {achievement.july2026 !== undefined && (
                       <span className="text-sm text-green-600 font-medium">
-                        Nov: {achievement.november2025}
+                        July: {achievement.july2026}
                       </span>
                     )}
                   </div>
@@ -377,7 +377,7 @@ const ExcelAchievementUpload = () => {
         <h4 className="text-sm font-medium text-blue-900 mb-2">Excel Format Requirements:</h4>
         <ul className="text-xs text-blue-800 space-y-1">
           <li>• First column: Field Engineer (Email addresses)</li>
-          <li>• Columns: September, October, November Achievement (Numeric values)</li>
+          <li>• Columns: May, June, July 2026 Achievement (Numeric values)</li>
           <li>• First row should contain headers</li>
           <li>• Data should start from the second row</li>
         </ul>
