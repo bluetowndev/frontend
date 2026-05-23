@@ -80,7 +80,7 @@ const UserTargets = () => {
 
     setCurrentMonth(monthNames[now.getMonth()]);
 
-    // TODAY DATE (fixed - removed yesterday -1 logic)
+    // TODAY DATE
     const today = new Date();
 
     setTodayDate(
@@ -313,24 +313,20 @@ const UserTargets = () => {
 
   return (
     <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
-      {/* IMAGE - 32x32 size with slight corner cut */}
+      {/* IMAGE */}
       <div className="flex items-center justify-center mb-6">
         <div className="w-32 h-32 rounded-lg overflow-hidden border border-gray-100 shadow-sm bg-white p-1.5">
           <img
             src={lakshyaImage}
             alt="Lakshya Logo"
-            className="w-full h-full object-contain" 
+            className="w-full h-full object-contain"
           />
         </div>
       </div>
 
-      {/* NO TARGET */}
+      {/* NO TARGET - icon removed */}
       {!hasAnyTargets ? (
         <div className="text-center py-8">
-          <div className="text-gray-400 text-4xl mb-4">
-            🎯
-          </div>
-
           <p className="text-gray-500 text-sm">
             No targets set for 2026
           </p>
@@ -415,11 +411,10 @@ const UserTargets = () => {
                           Target:
                         </span>
 
+                        {/* CHANGE 2 - added % after number */}
                         <span className="text-base font-bold text-gray-800">
                           {target !== null
-                            ? Math.round(
-                                target
-                              ).toLocaleString()
+                            ? `${Math.round(target).toLocaleString()}%`
                             : 'Not Set'}
                         </span>
                       </div>
@@ -429,12 +424,11 @@ const UserTargets = () => {
                           Achieved:
                         </span>
 
+                        {/* CHANGE 2 - added % after number */}
                         <span className="text-base font-bold text-gray-800">
                           {achievement !== null
-                            ? Math.round(
-                                achievement
-                              ).toLocaleString()
-                            : '0'}
+                            ? `${Math.round(achievement).toLocaleString()}%`
+                            : '0%'}
                         </span>
                       </div>
                     </div>
