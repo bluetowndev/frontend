@@ -13,7 +13,7 @@ const UserTargets = () => {
   const [targets, setTargets] = useState(null);
   const [achievements, setAchievements] = useState(null);
   const [currentMonth, setCurrentMonth] = useState('');
-  const [yesterdayDate, setYesterdayDate] = useState('');
+  const [todayDate, setTodayDate] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -80,13 +80,11 @@ const UserTargets = () => {
 
     setCurrentMonth(monthNames[now.getMonth()]);
 
-    // YESTERDAY DATE
-    const yesterday = new Date();
+    // TODAY DATE (fixed - removed yesterday -1 logic)
+    const today = new Date();
 
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    setYesterdayDate(
-      yesterday.toLocaleDateString('en-US', {
+    setTodayDate(
+      today.toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
@@ -398,11 +396,11 @@ const UserTargets = () => {
                       {isCurrentMonth && (
                         <div className="mt-2 p-1.5 bg-blue-50 rounded-md border border-blue-200">
                           <p className="text-xs text-blue-600 font-medium">
-                            On Date:
+                            Today:
                           </p>
 
                           <p className="text-xs text-blue-800 font-semibold">
-                            {yesterdayDate}
+                            {todayDate}
                           </p>
                         </div>
                       )}
