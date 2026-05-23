@@ -313,13 +313,13 @@ const UserTargets = () => {
 
   return (
     <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
-      {/* IMAGE */}
-      <div className="flex items-center justify-center mb-4 sm:mb-6">
-        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden">
+      {/* IMAGE - 32x32 size with slight corner cut */}
+      <div className="flex items-center justify-center mb-6">
+        <div className="w-32 h-32 rounded-lg overflow-hidden border border-gray-100 shadow-sm bg-white p-1.5">
           <img
             src={lakshyaImage}
-            alt="Lakshya"
-            className="w-full h-full object-cover"
+            alt="Lakshya Logo"
+            className="w-full h-full object-contain" 
           />
         </div>
       </div>
