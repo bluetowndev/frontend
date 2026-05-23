@@ -314,7 +314,7 @@ const UserTargets = () => {
   return (
     <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
       {/* IMAGE */}
-      <div className="flex items-center justify-center mb-6">
+      <div className="flex items-center justify-center mb-2">
         <div className="w-32 h-32 rounded-lg overflow-hidden border border-gray-100 shadow-sm bg-white p-1.5">
           <img
             src={lakshyaImage}
